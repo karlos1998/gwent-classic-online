@@ -1,0 +1,119 @@
+<template>
+  <section id="deck-customization" :class="{ hide: !ui.customizationVisible }">
+    <div id="faction-title" class="center">
+      <h1 :style="{ backgroundImage: shield }">{{ dm.factionName }}</h1>
+    </div>
+    <p id="faction-description">{{ dm.factionDescription }}</p>
+
+    <label id="upload-deck" class="deck-options" @mouseenter="hoverSFX">
+      <input type="file" id="add-file" style="display: none" @change="onUpload" />
+      Upload Deck
+    </label>
+
+    <a id="change-faction" class="deck-options" @click="dm.selectFaction()" @mouseenter="hoverSFX">Change Faction</a>
+
+    <a id="download-deck" class="deck-options" @click="dm.downloadDeck()" @mouseenter="hoverSFX">Download Deck</a>
+
+    <h2 id="card-bank-title" class="card-contianer-title">Card Collection</h2>
+    <h2 id="card-deck-title" class="card-contianer-title">Cards in Deck</h2>
+    <div id="card-bank" class="card-array">
+      <div
+        v-for="(x, i) in dm.bank"
+        :key="'b' + x.index"
+        class="card-lg"
+        :class="{ hide: !x.count }"
+        :style="{ backgroundImage: large(x.index) }"
+        @click="dm.select(i, true)"
+        @mouseenter="hoverSFX"
+      >
+        <div>{{ x.count }}</div>
+      </div>
+      <div v-if="bankFaux" class="card-lg empty"></div>
+    </div>
+    <div id="card-deck" class="card-array">
+      <div
+        v-for="(x, i) in dm.deck"
+        :key="'d' + x.index"
+        class="card-lg"
+        :class="{ hide: !x.count }"
+        :style="{ backgroundImage: large(x.index) }"
+        @click="dm.select(i, false)"
+        @mouseenter="hoverSFX"
+      >
+        <div>{{ x.count }}</div>
+      </div>
+      <div v-if="deckFaux" class="card-lg empty"></div>
+    </div>
+    <div id="card-leader">
+      <p>Leader</p>
+      <div :style="{ backgroundImage: leaderImg }" @click="dm.selectLeader()" @mouseenter="hoverSFX"></div>
+    </div>
+    <div id="deck-stats">
+      <p>Total cards in deck</p>
+      <p>{{ dm.stats.total }}</p>
+      <p>Number of Unit Cards</p>
+      <p :style="{ color: dm.stats.units < 22 ? 'red' : '' }">{{ dm.stats.units + (dm.stats.units < 22 ? '/22' : '') }}</p>
+      <p>Special Cards</p>
+      <p :style="{ color: dm.stats.special > 10 ? 'red' : '' }">{{ dm.stats.special + '/10' }}</p>
+      <p>Total Unit Card Strength</p>
+      <p>{{ dm.stats.strength }}</p>
+      <p>Hero Cards</p>
+      <p>{{ dm.stats.hero }}</p>
+    </div>
+    <button id="start-game" @click="dm.startNewGame()" @mouseenter="hoverSFX">Start game</button>
+    <div id="opponent-preview" class="center">
+      <div>
+        <p>Oponent's Deck</p>
+      </div>
+      <div class="center">
+        <button
+          id="op-preview-open"
+          :class="{ hide: !dm.hasCustomOpponent }"
+          data-title="View opponent"
+          @click="dm.viewOponentCards()"
+          @mouseenter="hoverSFX"
+        ></button>
+        <div id="op-preview-faction" :class="{ hide: !dm.hasCustomOpponent }" :style="opShield"></div>
+        <label id="op-preview-leader" for="add-opponent" data-title="Upload opponent" @mouseenter="hoverSFX">
+          <input type="file" id="add-opponent" style="display: none" @change="onUploadOpponent" />
+          <p>{{ dm.customOpponentLeaderName }}</p>
+        </label>
+        <button
+          id="op-preview-clear"
+          :class="{ hide: !dm.hasCustomOpponent }"
+          data-title="Clear opponent"
+          @click="dm.clearOpponentDeck()"
+          @mouseenter="hoverSFX"
+        ></button>
+      </div>
+    </div>
+  </section>
+</template>
+
+<script lang="ts">
+import { computed, defineComponent } from 'vue'
+import { card_dict } from '@/engine'
+import { ui } from '../store'
+import { useDeckMaker } from '../deckMaker'
+import { iconURL, largeURL } from '../assets'
+import { hoverSFX } from '../audio'
+
+export default defineComponent({
+  name: 'DeckCustomization',
+  setup() {
+    const dm = useDeckMaker()
+    const large = (index: number) => largeURL(card_dict[index].deck + '_' + card_dict[index].filename)
+    const shield = computed(() => (dm.faction ? iconURL('deck_shield_' + dm.faction) : ''))
+    const leaderImg = computed(() => (dm.leader ? largeURL(dm.leader.card.deck + '_' + dm.leader.card.filename) : ''))
+    // empty card element to keep alignment when visible count % 3 == 2 (original updateFauxCard)
+    const bankFaux = computed(() => dm.bank.filter((x) => x.count).length % 3 === 2)
+    const deckFaux = computed(() => dm.deck.filter((x) => x.count).length % 3 === 2)
+    const opShield = computed(() =>
+      dm.hasCustomOpponent ? { backgroundImage: iconURL('deck_shield_' + (dm.opponentData as { faction: string }).faction) } : {},
+    )
+    const onUpload = (e: Event) => dm.uploadPlayerDeck(e.target as HTMLInputElement)
+    const onUploadOpponent = (e: Event) => dm.uploadOpponentDeck(e.target as HTMLInputElement)
+    return { ui, dm, large, shield, leaderImg, bankFaux, deckFaux, opShield, onUpload, onUploadOpponent, hoverSFX }
+  },
+})
+</script>
