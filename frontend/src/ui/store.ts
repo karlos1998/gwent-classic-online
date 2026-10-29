@@ -73,6 +73,18 @@ export function describe(card: CarouselItem | null | undefined): Description {
   return { hidden: true, icon: '', title: '', text: '' }
 }
 
+/**
+ * Online mode: player input is sent to the server instead of being executed by the local engine.
+ * While set, the board's click handlers call these instead of moving cards themselves.
+ */
+export interface RemoteActions {
+  /** a card from the hand dropped on a row / the weather slot (Scorch: row is ignored) */
+  playCard(card: Card, row: Row | Weather): void
+  playDecoy(decoy: Card, target: Card): void
+  pass(): void
+  activateLeader(): void
+}
+
 type Listener<T> = (arg: T) => void
 class Signal<T> {
   private listeners = new Set<Listener<T>>()
@@ -102,6 +114,8 @@ export class Carousel {
   bExit = false
   title?: string
   cancelled = false
+  /** called when the player closes an exitable carousel (online: answers the open prompt) */
+  onCancel?: () => void
 
   constructor(
     container: CardContainer,
@@ -173,6 +187,7 @@ export class Carousel {
       this.cancelled = true
       AudioManager.playSFX('discard')
       this.exit()
+      this.onCancel?.()
     }
     ui.enablePlayer(true)
   }
@@ -261,6 +276,9 @@ export class UIStore implements UIPort {
   // music (YouTube)
   musicReady = false
   musicPlaying = false
+
+  /** set by the online game, see RemoteActions */
+  remote: RemoteActions | null = null
 
   readonly rowSelected = new Signal<Row | Weather | null>()
   readonly previewCancelled = new Signal<null>()
@@ -364,6 +382,20 @@ export class UIStore implements UIPort {
     await sleepUntil(() => this.carousels.length === 0 && !this.carouselCurr, 100)
   }
 
+  /** Shows (or queues) a prepared carousel without waiting for it - used by the online mode */
+  openCarousel(carousel: Carousel) {
+    if (!carousel.valid) return
+    if (this.carouselCurr) this.carousels.push(carousel)
+    else carousel.start()
+  }
+
+  /** Closes the given carousel if it is shown or still queued */
+  closeCarousel(carousel: Carousel) {
+    const queued = this.carousels.indexOf(carousel)
+    if (queued >= 0) this.carousels.splice(queued, 1)
+    if (this.carouselCurr === carousel) carousel.exit()
+  }
+
   // Starts the next queued Carousel
   quitCarousel() {
     if (this.carousels.length > 0) this.carousels.shift()!.start()
@@ -462,6 +494,7 @@ export class UIStore implements UIPort {
     } else if (pCard.name === 'Decoy') {
       this.hidePreview()
       this.enablePlayer(false)
+      if (this.remote) return this.remote.playDecoy(pCard, card)
       ctx.board.toHand(card, row!)
       await ctx.board.moveTo(pCard, row!, pCard.holder!.hand)
       pCard.holder!.endTurn()
@@ -482,6 +515,7 @@ export class UIStore implements UIPort {
     const holder = card.holder!
     this.hidePreview()
     this.enablePlayer(false)
+    if (this.remote) return this.remote.playCard(card, row)
     if (card.name === 'Scorch') {
       this.hidePreview()
       await ability_dict['scorch'].activated!(card)
@@ -500,6 +534,11 @@ export class UIStore implements UIPort {
   }
 
   passRound() {
+    if (this.remote) {
+      this.setPassEnabled(false)
+      this.enablePlayer(false)
+      return this.remote.pass()
+    }
     ctx.me.passRound()
     AudioManager.playSFX('pass')
   }
@@ -510,6 +549,10 @@ export class UIStore implements UIPort {
     if (player.leaderPlayable)
       this.viewCard(player.leader, async () => {
         AudioManager.playSFX('open')
+        if (this.remote) {
+          this.enablePlayer(false)
+          return this.remote.activateLeader()
+        }
         await player.activateLeader()
       })
     else this.viewCard(player.leader)

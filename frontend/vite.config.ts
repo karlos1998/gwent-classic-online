@@ -17,7 +17,10 @@ export default defineConfig({
   server: {
     port: 47317,
     strictPort: true, // fail instead of silently picking another port
-    // the Spring Boot backend (online mode) will run on 8080
-    proxy: { '/api': 'http://localhost:8080', '/ws': { target: 'ws://localhost:8080', ws: true } },
+    // Spring Boot backend of the online mode (gwent.server.port / GWENT_SERVER_PORT)
+    proxy: {
+      '/api': { target: 'http://localhost:47321', changeOrigin: false },
+      '/ws': { target: 'ws://localhost:47321', ws: true },
+    },
   },
 })

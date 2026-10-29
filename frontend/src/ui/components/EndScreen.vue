@@ -27,12 +27,18 @@
         </tr>
       </tbody>
     </table>
-    <p :class="{ hide: !data || data.result !== 'draw' }">
+    <p :class="{ hide: !data || data.result !== 'draw' || !!data.actions }">
       {{ $t('end.drawMessage') }}
     </p>
-    <button @mouseenter="hoverSFX" @click="game.returnToCustomization()">{{ $t('end.customize') }}</button>
-    <button @mouseenter="hoverSFX" @click="game.rematchGame()">{{ $t('end.rematch') }}</button>
-    <button @mouseenter="hoverSFX" @click="game.newOpponentGame()">{{ $t('end.newGame') }}</button>
+    <p v-if="data?.message" class="end-message">{{ $t(data.message) }}</p>
+    <template v-if="data?.actions">
+      <button v-for="a in data.actions" :key="a.label" @mouseenter="hoverSFX" @click="a.run()">{{ $t(a.label) }}</button>
+    </template>
+    <template v-else>
+      <button @mouseenter="hoverSFX" @click="game.returnToCustomization()">{{ $t('end.customize') }}</button>
+      <button @mouseenter="hoverSFX" @click="game.rematchGame()">{{ $t('end.rematch') }}</button>
+      <button @mouseenter="hoverSFX" @click="game.newOpponentGame()">{{ $t('end.newGame') }}</button>
+    </template>
   </section>
 </template>
 
@@ -54,3 +60,9 @@ export default defineComponent({
   },
 })
 </script>
+
+<style>
+#end-screen > p.end-message {
+  color: goldenrod;
+}
+</style>

@@ -1,30 +1,133 @@
 <template>
-  <div class="home">
+  <NicknameForm v-if="online.phase === 'nickname'" />
+
+  <div v-else-if="online.phase === 'connecting'" class="home">
     <div class="home-bg"></div>
     <div class="home-content">
-      <p class="home-kicker">{{ $t('online.kicker') }}</p>
-      <h1 class="home-title">{{ $t('online.title') }}</h1>
-      <p class="home-sub">{{ $t('online.subtitle') }}</p>
-      <ul class="online-list">
-        <li v-for="n in 4" :key="n">{{ $t('online.feature' + n) }}</li>
-      </ul>
+      <div class="sp-spinner online-connecting"><span></span><span></span><span></span></div>
+      <p class="home-sub">{{ $t('online.connection.connecting') }}</p>
+    </div>
+  </div>
+
+  <div v-else-if="online.phase === 'replaced'" class="home">
+    <div class="home-bg"></div>
+    <div class="home-content">
+      <h1 class="home-title">{{ $t('online.replaced.title') }}</h1>
+      <p class="home-sub">{{ $t('online.replaced.description') }}</p>
+      <button class="nick-submit" @click="online.reclaim()">{{ $t('online.replaced.reclaim') }}</button>
+      <p></p>
       <RouterLink to="/" class="mode back">{{ $t('online.back') }}</RouterLink>
     </div>
   </div>
+
+  <template v-else>
+    <!-- lobby: the deck builder of the offline mode, the start button searches for an opponent -->
+    <template v-if="online.phase === 'lobby'">
+      <DeckCustomization online :locked="!!online.search || !!online.match" @start="online.findMatch($event)" />
+      <LobbyBar />
+      <SearchPanel v-if="online.search" />
+      <MatchFoundDialog v-if="online.match" :match="online.match" />
+    </template>
+
+    <template v-else-if="online.game">
+      <GameBoard exit-title="online.game.surrender" @exit="confirmSurrender" />
+      <TurnTimer :timer="online.game.view.timer" />
+      <OpponentAway
+        v-if="online.game.view.opponentAway"
+        :ends-at="online.game.view.opponentAway.endsAt"
+        :name="online.opponent?.nickname ?? ''"
+      />
+      <div v-if="online.socketState === 'reconnecting'" class="opponent-away reconnecting">
+        <span class="oa-dot"></span>{{ $t('online.connection.reconnecting') }}
+      </div>
+    </template>
+
+    <SettingsButtons />
+  </template>
+
+  <ToastStack />
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
-export default defineComponent({ name: 'OnlineView' })
+import { defineComponent, onBeforeUnmount, onMounted } from 'vue'
+import { online } from '@/online/session'
+import { ui, initMusic } from '@/ui/store'
+import { AudioManager } from '@/ui/audio'
+import { ensureEngine } from '@/ui/bootstrap'
+import GameBoard from '@/ui/components/GameBoard.vue'
+import DeckCustomization from '@/ui/components/DeckCustomization.vue'
+import SettingsButtons from '@/ui/components/SettingsButtons.vue'
+import NicknameForm from '@/online/components/NicknameForm.vue'
+import LobbyBar from '@/online/components/LobbyBar.vue'
+import SearchPanel from '@/online/components/SearchPanel.vue'
+import MatchFoundDialog from '@/online/components/MatchFoundDialog.vue'
+import TurnTimer from '@/online/components/TurnTimer.vue'
+import OpponentAway from '@/online/components/OpponentAway.vue'
+import ToastStack from '@/online/components/ToastStack.vue'
+
+export default defineComponent({
+  name: 'OnlineView',
+  components: {
+    GameBoard,
+    DeckCustomization,
+    SettingsButtons,
+    NicknameForm,
+    LobbyBar,
+    SearchPanel,
+    MatchFoundDialog,
+    TurnTimer,
+    OpponentAway,
+    ToastStack,
+  },
+  setup() {
+    ensureEngine()
+
+    const confirmSurrender = () => {
+      AudioManager.playSFX('warning')
+      ui.popup(
+        'popup.resume',
+        () => {},
+        'online.game.surrender',
+        () => online.game?.surrender(),
+        'online.game.surrenderTitle',
+        'online.game.surrenderDescription',
+      )
+    }
+
+    onMounted(() => {
+      document.body.classList.add('gwent-board')
+      initMusic()
+      online.resume()
+      // automated UI tests: /online?debug exposes the session next to window.__gwent
+      if (/[?&]debug\b/.test(location.search)) (window as unknown as Record<string, unknown>).__gwentOnline = online
+    })
+    // leaving the screen keeps the session (reload / come back), a running game has a grace period
+    onBeforeUnmount(() => online.suspend())
+
+    return { online, confirmSurrender }
+  },
+})
 </script>
 
 <style>
-.online-list {
-  text-align: left;
-  margin: 0 auto 2em;
-  max-width: 560px;
-  line-height: 1.6;
-  color: #ab977c;
+.online-connecting {
+  margin: 0 auto 1em;
+  width: 48px;
+  height: 48px;
+}
+.online-connecting span {
+  border-width: 3px;
+}
+.online-connecting span:nth-child(2) {
+  inset: 7px;
+}
+.online-connecting span:nth-child(3) {
+  inset: 15px;
+}
+.opponent-away.reconnecting {
+  top: 5vw;
+  background: rgba(60, 44, 10, 0.92);
+  border-color: #a07a2a;
 }
 .mode.back {
   display: inline-flex;
@@ -32,5 +135,11 @@ export default defineComponent({ name: 'OnlineView' })
   min-width: 160px;
   font-size: 1.2em;
   color: goldenrod;
+}
+#start-game.online {
+  min-width: 6%;
+  width: auto;
+  padding: 0 0.8vw;
+  transform: translateX(calc(-50% + 3vw));
 }
 </style>

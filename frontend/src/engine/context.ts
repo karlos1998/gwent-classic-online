@@ -15,6 +15,10 @@ export interface EndScreenData {
   result: 'win' | 'lose' | 'draw'
   names: [string, string]
   rounds: { me: number; op: number; meWon: boolean; opWon: boolean }[]
+  /** i18n key of an extra line under the table (online: surrender / disconnect) */
+  message?: string
+  /** buttons replacing the offline ones (customize / rematch / new game); label is an i18n key */
+  actions?: { label: string; run: () => void }[]
 }
 
 /** All strings passed to the UI (popup texts, carousel titles, notification names) are i18n keys. */

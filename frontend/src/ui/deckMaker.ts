@@ -221,11 +221,26 @@ export class DeckMaker {
     this.stats = { total: 0, units: 0, special: 0, strength: 0, hero: 0 }
   }
 
-  // Verifies current deck, creates the players and their decks, then starts a new game
-  startNewGame() {
+  /** Translated reasons why the deck cannot be played ('' = valid). The server checks the same rules. */
+  validationWarning() {
     let warning = ''
     if (this.stats.units < 22) warning += t('alerts.minUnits') + ' \n'
     if (this.stats.special > 10) warning += t('alerts.maxSpecial') + ' \n'
+    return warning
+  }
+
+  /** The current deck in the format of the online protocol */
+  toDeckDto() {
+    return {
+      faction: this.faction,
+      leader: this.leader!.index,
+      cards: this.deck.filter((x) => x.count > 0).map((x) => ({ index: x.index, count: x.count })),
+    }
+  }
+
+  // Verifies current deck, creates the players and their decks, then starts a new game
+  startNewGame() {
+    const warning = this.validationWarning()
     if (warning != '') {
       AudioManager.playSFX('warning')
       return alert(warning)

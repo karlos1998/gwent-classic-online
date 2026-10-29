@@ -1,5 +1,5 @@
 <template>
-  <section id="deck-customization" :class="{ hide: !ui.customizationVisible }">
+  <section id="deck-customization" :class="{ hide: !ui.customizationVisible, locked }">
     <div id="faction-title" class="center">
       <h1 :style="{ backgroundImage: shield }">{{ dm.factionName }}</h1>
     </div>
@@ -60,8 +60,8 @@
       <p>{{ $t('deck.heroCards') }}</p>
       <p>{{ dm.stats.hero }}</p>
     </div>
-    <button id="start-game" @click="dm.startNewGame()" @mouseenter="hoverSFX">{{ $t('deck.startGame') }}</button>
-    <div id="opponent-preview" class="center">
+    <button id="start-game" :class="{ online }" @click="onStart" @mouseenter="hoverSFX">{{ $t(online ? 'online.lobby.findOpponent' : 'deck.startGame') }}</button>
+    <div v-if="!online" id="opponent-preview" class="center">
       <div>
         <p>{{ $t('deck.opponentsDeck') }}</p>
       </div>
@@ -96,11 +96,18 @@ import { card_dict } from '@/engine'
 import { ui } from '../store'
 import { useDeckMaker } from '../deckMaker'
 import { iconURL, largeURL } from '../assets'
-import { hoverSFX } from '../audio'
+import { hoverSFX, AudioManager } from '../audio'
 
 export default defineComponent({
   name: 'DeckCustomization',
-  setup() {
+  props: {
+    /** online lobby: the start button searches for an opponent, no custom AI opponent */
+    online: { type: Boolean, default: false },
+    /** deck cannot be edited (matchmaking in progress) */
+    locked: { type: Boolean, default: false },
+  },
+  emits: ['start'],
+  setup(props, { emit }) {
     const dm = useDeckMaker()
     const large = (index: number) => largeURL(card_dict[index].deck + '_' + card_dict[index].filename)
     const shield = computed(() => (dm.faction ? iconURL('deck_shield_' + dm.faction) : ''))
@@ -113,7 +120,24 @@ export default defineComponent({
     )
     const onUpload = (e: Event) => dm.uploadPlayerDeck(e.target as HTMLInputElement)
     const onUploadOpponent = (e: Event) => dm.uploadOpponentDeck(e.target as HTMLInputElement)
-    return { ui, dm, large, shield, leaderImg, bankFaux, deckFaux, opShield, onUpload, onUploadOpponent, hoverSFX }
+    const onStart = () => {
+      if (!props.online) return dm.startNewGame()
+      const warning = dm.validationWarning()
+      if (warning) {
+        AudioManager.playSFX('warning')
+        return alert(warning)
+      }
+      emit('start', dm.toDeckDto())
+    }
+    return { ui, dm, large, shield, leaderImg, bankFaux, deckFaux, opShield, onUpload, onUploadOpponent, onStart, hoverSFX }
   },
 })
 </script>
+
+<style>
+#deck-customization.locked {
+  pointer-events: none;
+  filter: saturate(0.45) brightness(0.7);
+  transition: filter 0.3s;
+}
+</style>

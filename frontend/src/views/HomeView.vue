@@ -18,7 +18,7 @@
         <RouterLink to="/online" class="mode" @mouseenter="hoverSFX">
           <span class="mode-icon" :style="{ backgroundImage: icon('deck_shield_nilfgaard') }"></span>
           <span class="mode-text">
-            <span class="mode-name">{{ $t('home.online') }} <em>{{ $t('home.soon') }}</em></span>
+            <span class="mode-name">{{ $t('home.online') }}</span>
             <span class="mode-desc">{{ $t('home.onlineDesc') }}</span>
           </span>
         </RouterLink>
