@@ -6,7 +6,7 @@
     @click="ui.clickLeader(tag === 'me')"
     @mouseenter="player && hoverSFX()"
   >
-    <div class="leader-container center" :class="{ fade: player?.leaderFaded }" :data-title="title">
+    <div class="leader-container center" :class="{ fade: player?.leaderFaded }" :data-title="$t(title)">
       <CardView v-if="player" :key="player.leader.uid" :card="player.leader" />
     </div>
     <div class="leader-active" :class="{ hide: player && !player.leaderActiveShown }">
@@ -30,7 +30,7 @@ export default defineComponent({
     player: { type: Object as PropType<Player | null>, default: null },
   },
   setup(props) {
-    const title = computed(() => (props.tag === 'me' && props.player?.leaderPlayable ? 'Play leader' : 'View leader'))
+    const title = computed(() => (props.tag === 'me' && props.player?.leaderPlayable ? 'game.playLeader' : 'game.viewLeader'))
     return { ui, title, hoverSFX }
   },
 })

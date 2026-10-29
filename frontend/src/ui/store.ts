@@ -21,6 +21,7 @@ import { AudioManager } from './audio'
 import { Settings } from './settings'
 import { translateTo } from './flight'
 import { iconURL } from './assets'
+import { t, te, factionName, factionDescription } from '@/i18n'
 
 /** Anything that can be shown in a carousel (cards, or the faction pseudo-cards of the deck maker) */
 export interface CarouselItem {
@@ -31,8 +32,6 @@ export interface CarouselItem {
   hero?: boolean
   row?: string
   abilities: string[]
-  desc_name?: string
-  desc?: string
 }
 
 export interface Description {
@@ -42,19 +41,34 @@ export interface Description {
   text: string
 }
 
-// Sets up description window for a card (original UI.setDescription)
+const abilityName = (key: string) => (te(`abilities.${key}.name`) ? t(`abilities.${key}.name`) : '')
+const abilityDesc = (key: string) => (te(`abilities.${key}.description`) ? t(`abilities.${key}.description`) : '')
+
+// Sets up description window for a card (original UI.setDescription + Card desc_name/desc, now translated)
 export function describe(card: CarouselItem | null | undefined): Description {
-  if (!card) return { hidden: false, icon: '', title: 'NULL', text: '' }
-  if (card.hero || card.row === 'agile' || card.abilities.length > 0 || card.faction === 'faction') {
+  if (!card) return { hidden: false, icon: '', title: '', text: '' }
+  if (card.faction === 'faction')
+    return { hidden: false, icon: '', title: factionName(card.filename), text: factionDescription(card.filename) }
+  if (card.hero || card.row === 'agile' || card.abilities.length > 0) {
     let str = card.row === 'agile' ? 'agile' : ''
     if (card.abilities.length) str = card.abilities[card.abilities.length - 1]
     if (str === 'cerys') str = 'muster'
     if (str.startsWith('avenger')) str = 'avenger'
     if (str === 'scorch_c' || str == 'scorch_r' || str === 'scorch_s') str = 'scorch'
     let icon = ''
-    if (card.row === 'leader' || card.faction === 'faction' || (card.abilities.length === 0 && card.row !== 'agile')) icon = ''
+    if (card.row === 'leader' || (card.abilities.length === 0 && card.row !== 'agile')) icon = ''
     else icon = iconURL('card_ability_' + str)
-    return { hidden: false, icon, title: card.desc_name ?? '', text: card.desc ?? '' }
+
+    let title = ''
+    if (card.row === 'leader') title = t('game.leaderAbility')
+    else if (card.abilities.length > 0) title = abilityName(card.abilities[card.abilities.length - 1])
+    else if (card.row === 'agile') title = abilityName('agile')
+    else if (card.hero) title = abilityName('hero')
+
+    let text = card.row === 'agile' ? abilityDesc('agile') : ''
+    for (let i = card.abilities.length - 1; i >= 0; --i) text += abilityDesc(card.abilities[i])
+    if (card.hero) text += abilityDesc('hero')
+    return { hidden: false, icon, title, text }
   }
   return { hidden: true, icon: '', title: '', text: '' }
 }
@@ -225,12 +239,13 @@ export class UIStore implements UIPort {
   carouselCurr: Carousel | null = null
   carouselView = { visible: false, magnitude: 0, dir: '' as '' | 'left' | 'right', transTime: '0s' }
 
+  /** all texts are i18n keys */
   popupState: PopupState = {
     visible: false,
     title: '',
     description: '',
-    yesName: 'Yes',
-    noName: 'No',
+    yesName: 'popup.yes',
+    noName: 'popup.no',
     alpha: 0.95,
     yes: () => {},
     no: () => {},
@@ -377,8 +392,8 @@ export class UIStore implements UIPort {
     p.no = no ?? (() => {})
     p.title = title ? title : ''
     p.description = description ? description : ''
-    p.yesName = yesName ? yesName : 'Yes'
-    p.noName = noName ? noName : 'No'
+    p.yesName = yesName ? yesName : 'popup.yes'
+    p.noName = noName ? noName : 'popup.no'
     p.alpha = alpha
     p.visible = true
     this.enablePlayer(true)

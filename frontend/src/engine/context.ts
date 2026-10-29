@@ -17,6 +17,7 @@ export interface EndScreenData {
   rounds: { me: number; op: number; meWon: boolean; opWon: boolean }[]
 }
 
+/** All strings passed to the UI (popup texts, carousel titles, notification names) are i18n keys. */
 export interface UIPort {
   enablePlayer(enable: boolean): void
   notification(name: string, duration?: number): Promise<void>

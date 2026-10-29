@@ -7,15 +7,15 @@
 
     <label id="upload-deck" class="deck-options" @mouseenter="hoverSFX">
       <input type="file" id="add-file" style="display: none" @change="onUpload" />
-      Upload Deck
+      {{ $t('deck.uploadDeck') }}
     </label>
 
-    <a id="change-faction" class="deck-options" @click="dm.selectFaction()" @mouseenter="hoverSFX">Change Faction</a>
+    <a id="change-faction" class="deck-options" @click="dm.selectFaction()" @mouseenter="hoverSFX">{{ $t('deck.changeFaction') }}</a>
 
-    <a id="download-deck" class="deck-options" @click="dm.downloadDeck()" @mouseenter="hoverSFX">Download Deck</a>
+    <a id="download-deck" class="deck-options" @click="dm.downloadDeck()" @mouseenter="hoverSFX">{{ $t('deck.downloadDeck') }}</a>
 
-    <h2 id="card-bank-title" class="card-contianer-title">Card Collection</h2>
-    <h2 id="card-deck-title" class="card-contianer-title">Cards in Deck</h2>
+    <h2 id="card-bank-title" class="card-contianer-title">{{ $t('deck.collection') }}</h2>
+    <h2 id="card-deck-title" class="card-contianer-title">{{ $t('deck.inDeck') }}</h2>
     <div id="card-bank" class="card-array">
       <div
         v-for="(x, i) in dm.bank"
@@ -45,43 +45,43 @@
       <div v-if="deckFaux" class="card-lg empty"></div>
     </div>
     <div id="card-leader">
-      <p>Leader</p>
+      <p>{{ $t('deck.leader') }}</p>
       <div :style="{ backgroundImage: leaderImg }" @click="dm.selectLeader()" @mouseenter="hoverSFX"></div>
     </div>
     <div id="deck-stats">
-      <p>Total cards in deck</p>
+      <p>{{ $t('deck.totalCards') }}</p>
       <p>{{ dm.stats.total }}</p>
-      <p>Number of Unit Cards</p>
+      <p>{{ $t('deck.unitCards') }}</p>
       <p :style="{ color: dm.stats.units < 22 ? 'red' : '' }">{{ dm.stats.units + (dm.stats.units < 22 ? '/22' : '') }}</p>
-      <p>Special Cards</p>
+      <p>{{ $t('deck.specialCards') }}</p>
       <p :style="{ color: dm.stats.special > 10 ? 'red' : '' }">{{ dm.stats.special + '/10' }}</p>
-      <p>Total Unit Card Strength</p>
+      <p>{{ $t('deck.strength') }}</p>
       <p>{{ dm.stats.strength }}</p>
-      <p>Hero Cards</p>
+      <p>{{ $t('deck.heroCards') }}</p>
       <p>{{ dm.stats.hero }}</p>
     </div>
-    <button id="start-game" @click="dm.startNewGame()" @mouseenter="hoverSFX">Start game</button>
+    <button id="start-game" @click="dm.startNewGame()" @mouseenter="hoverSFX">{{ $t('deck.startGame') }}</button>
     <div id="opponent-preview" class="center">
       <div>
-        <p>Oponent's Deck</p>
+        <p>{{ $t('deck.opponentsDeck') }}</p>
       </div>
       <div class="center">
         <button
           id="op-preview-open"
           :class="{ hide: !dm.hasCustomOpponent }"
-          data-title="View opponent"
+          :data-title="$t('deck.viewOpponent')"
           @click="dm.viewOponentCards()"
           @mouseenter="hoverSFX"
         ></button>
         <div id="op-preview-faction" :class="{ hide: !dm.hasCustomOpponent }" :style="opShield"></div>
-        <label id="op-preview-leader" for="add-opponent" data-title="Upload opponent" @mouseenter="hoverSFX">
+        <label id="op-preview-leader" for="add-opponent" :data-title="$t('deck.uploadOpponent')" @mouseenter="hoverSFX">
           <input type="file" id="add-opponent" style="display: none" @change="onUploadOpponent" />
           <p>{{ dm.customOpponentLeaderName }}</p>
         </label>
         <button
           id="op-preview-clear"
           :class="{ hide: !dm.hasCustomOpponent }"
-          data-title="Clear opponent"
+          :data-title="$t('deck.clearOpponent')"
           @click="dm.clearOpponentDeck()"
           @mouseenter="hoverSFX"
         ></button>

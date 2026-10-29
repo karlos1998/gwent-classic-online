@@ -149,7 +149,7 @@ export class Game {
       () => true,
       false,
       true,
-      'Choose up to 2 cards to redraw.',
+      'carousel.redraw',
     )
     ctx.ui.enablePlayer(false)
   }
@@ -269,12 +269,12 @@ export class Game {
   exitGame() {
     playSFX('warning')
     ctx.ui.popup(
-      'Resume',
+      'popup.resume',
       () => {},
-      'Exit',
+      'popup.exit',
       () => this.returnToCustomization(),
-      'Quit curent game?',
-      'This will return you to the deck customization menu.',
+      'popup.exitTitle',
+      'popup.exitDescription',
     )
   }
 

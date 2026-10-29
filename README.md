@@ -23,6 +23,22 @@ npm run typecheck  # sprawdzenie typów (vue-tsc), opcjonalnie
 Ekran startowy: **Play vs AI** (offline) albo **Play Online** (na razie zapowiedź).
 Dodaj `?debug` do adresu (`/offline?debug`), żeby w konsoli mieć `window.__gwent` (stan gry, silnik) — przydatne przy testach.
 
+## Języki (i18n)
+
+Aplikacja jest w pełni dwujęzyczna (EN / PL) dzięki [vue-i18n](https://vue-i18n.intlify.dev/). Przełącznik z flagami jest
+w prawym górnym rogu na każdym ekranie. Domyślnie używany jest język przeglądarki (polski → PL, każdy inny → EN),
+a wybór zapamiętuje się w localStorage.
+
+- Wszystkie teksty są w `src/i18n/locales/en.ts` i `pl.ts`, nic nie jest wpisane na sztywno (szablony, alerty, popupy,
+  powiadomienia, które w oryginale siedziały w CSS, nazwy kart, opisy zdolności i frakcji).
+- `pl.ts` jest typowany strukturą `en.ts`, więc brakujący albo nadmiarowy klucz to błąd TypeScriptu (`npm run typecheck`).
+- Silnik gry dalej używa angielskich nazw kart jako identyfikatorów (zależą od nich zasady „muster” i „więź”).
+  Wyświetlana nazwa pochodzi z klucza `cards.<nazwa_w_snake_case>`, np. `cards.geralt_of_rivia`.
+- Napisy wydrukowane na samych grafikach (nazwy i cytaty na kartach, „Victory/Defeat” na ekranie końcowym) są częścią
+  obrazków z gry i zostają po angielsku.
+- Dodanie języka: skopiuj `pl.ts` jako np. `de.ts`, przetłumacz, dopisz do `LOCALES` i `messages` w `src/i18n/index.ts`
+  i dodaj flagę `public/svg/flag_de.svg`.
+
 ## Skąd to jest
 
 Tryb offline to port 1:1 projektu [Gwent Classic](https://github.com/asundr/gwent-classic) autorstwa Aruna Sundarama
@@ -48,7 +64,8 @@ grafiki pochodzą z gry. Traktuj to jako projekt fanowski, niekomercyjny.
 
 ```
 src/
-├── engine/          czysta logika gry (bez DOM) — port gwent.js / abilities.js / factions.js
+├── i18n/            tłumaczenia EN/PL (vue-i18n)
+├── engine/          czysta logika gry (bez DOM, bez tekstów dla użytkownika) — port gwent.js / abilities.js / factions.js
 │   ├── card.ts, containers.ts (Deck, Hand, Grave, Row, Weather), board.ts, player.ts
 │   ├── abilities.ts, factions.ts, ai.ts (ControllerAI), game.ts (przebieg gry)
 │   ├── context.ts   interfejs UIPort — jedyny kontakt silnika z warstwą prezentacji

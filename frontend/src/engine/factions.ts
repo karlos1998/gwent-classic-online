@@ -1,4 +1,4 @@
-// Faction perks - ported 1:1 from the original factions.js
+// Faction perks - ported 1:1 from the original factions.js (display names/descriptions: i18n factions.*)
 import { ctx } from './context'
 import { ControllerAI } from './ai'
 import { HandAI } from './containers'
@@ -8,15 +8,12 @@ import type { Card } from './card'
 import type { Row } from './containers'
 
 export interface FactionDef {
-  name: string
-  description: string
   factionAbility?: (player: Player) => void
   helper?: (player: Player) => Promise<void>
 }
 
 export const factions: Record<'realms' | 'nilfgaard' | 'monsters' | 'scoiatael' | 'skellige', FactionDef> = {
   realms: {
-    name: 'Northern Realms',
     factionAbility: (player) =>
       ctx.game.roundStart.push(async () => {
         if (ctx.game.roundCount > 1 && ctx.game.roundHistory[ctx.game.roundCount - 2].winner === player) {
@@ -25,14 +22,10 @@ export const factions: Record<'realms' | 'nilfgaard' | 'monsters' | 'scoiatael' 
         }
         return false
       }),
-    description: 'Draw a card from your deck whenever you win a round.',
   },
   nilfgaard: {
-    name: 'Nilfgaardian Empire',
-    description: 'Wins any round that ends in a draw.',
   },
   monsters: {
-    name: 'Monsters',
     factionAbility: (player) =>
       ctx.game.roundEnd.push(() => {
         const units = ctx.board.row
@@ -48,21 +41,19 @@ export const factions: Record<'realms' | 'nilfgaard' | 'monsters' | 'scoiatael' 
         })
         return false
       }),
-    description: 'Keeps a random Unit Card out after each round.',
   },
   scoiatael: {
-    name: "Scoia'tael",
     factionAbility: (player) =>
       ctx.game.gameStart.push(async () => {
         let notif = ''
         if (player === ctx.me) {
           await ctx.ui.popup(
-            'Go First',
+            'popup.goFirst',
             () => (ctx.game.firstPlayer = player),
-            'Let Opponent Start',
+            'popup.letOpponentStart',
             () => (ctx.game.firstPlayer = player.opponent()),
-            'Would you like to go first?',
-            "The Scoia'tael faction perk allows you to decide who will get to go first.",
+            'popup.scoiataelTitle',
+            'popup.scoiataelDescription',
             0.55,
           )
           notif = ctx.game.firstPlayer!.tag + '-first'
@@ -80,10 +71,8 @@ export const factions: Record<'realms' | 'nilfgaard' | 'monsters' | 'scoiatael' 
         await ctx.ui.notification(notif, 1200)
         return true
       }),
-    description: 'Decides who takes first turn.',
   },
   skellige: {
-    name: 'Skellige',
     factionAbility: (player) =>
       ctx.game.roundStart.push(async () => {
         if (ctx.game.roundCount != 3) return false
@@ -112,7 +101,5 @@ export const factions: Record<'realms' | 'nilfgaard' | 'monsters' | 'scoiatael' 
         await ctx.board.toRow(card, player.grave)
       }
     },
-    description:
-      '2 random cards from the graveyard are placed on the battlefield at the start of the third round.',
   },
 }

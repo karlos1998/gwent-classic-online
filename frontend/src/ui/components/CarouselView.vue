@@ -17,7 +17,7 @@
       ></div>
     </div>
     <CardDescription :card="curr ? curr.current ?? null : null" />
-    <div :class="{ hide: !curr || !curr.title }">{{ curr?.title }}</div>
+    <div :class="{ hide: !curr || !curr.title }">{{ curr?.title ? $t(curr.title) : '' }}</div>
   </section>
 </template>
 

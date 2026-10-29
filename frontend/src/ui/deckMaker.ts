@@ -16,6 +16,7 @@ import {
 import { AudioManager } from './audio'
 import { Settings } from './settings'
 import { ui } from './store'
+import { cardName, factionDescription, factionName, t } from '@/i18n'
 
 export interface BankEntry {
   index: number
@@ -46,11 +47,11 @@ export class DeckMaker {
   }
 
   get factionName() {
-    return factions[this.faction as keyof typeof factions]?.name ?? ''
+    return this.faction ? factionName(this.faction) : ''
   }
 
   get factionDescription() {
-    return factions[this.faction as keyof typeof factions]?.description ?? ''
+    return this.faction ? factionDescription(this.faction) : ''
   }
 
   get hasCustomOpponent() {
@@ -58,7 +59,7 @@ export class DeckMaker {
   }
 
   get customOpponentLeaderName() {
-    return this.hasCustomOpponent ? card_dict[(this.opponentData as { leader: number }).leader].name : 'Random'
+    return this.hasCustomOpponent ? cardName(card_dict[(this.opponentData as { leader: number }).leader].name) : t('deck.random')
   }
 
   loadFactionDeck(faction: string, _force = false) {
@@ -178,8 +179,6 @@ export class DeckMaker {
       return {
         abilities: [f],
         filename: f,
-        desc_name: factions[f as keyof typeof factions].name,
-        desc: factions[f as keyof typeof factions].description,
         faction: 'faction',
       } as unknown as Card
     })
@@ -225,8 +224,8 @@ export class DeckMaker {
   // Verifies current deck, creates the players and their decks, then starts a new game
   startNewGame() {
     let warning = ''
-    if (this.stats.units < 22) warning += 'Your deck must have at least 22 unit cards. \n'
-    if (this.stats.special > 10) warning += 'Your deck must have no more than 10 special cards. \n'
+    if (this.stats.units < 22) warning += t('alerts.minUnits') + ' \n'
+    if (this.stats.special > 10) warning += t('alerts.maxSpecial') + ' \n'
     if (warning != '') {
       AudioManager.playSFX('warning')
       return alert(warning)
@@ -239,9 +238,10 @@ export class DeckMaker {
     }
     const op_deck = this.constructOpponentDeck(true)
 
-    ctx.me = new Player(0, 'Player 1', me_deck)
-    ctx.op = new Player(1, 'Player 2', op_deck)
-    ctx.game.newOpponentFactory = () => new Player('op', 'Player 2', this.constructOpponentDeck(false))
+    // '' = the UI shows the translated default name (game.player1 / game.player2)
+    ctx.me = new Player(0, '', me_deck)
+    ctx.op = new Player(1, '', op_deck)
+    ctx.game.newOpponentFactory = () => new Player('op', '', this.constructOpponentDeck(false))
 
     ui.customizationVisible = false
     ctx.game.startGame()
@@ -282,7 +282,7 @@ export class DeckMaker {
         const deck = this.deckFromJSON(String(e.target!.result))
         if (deck) callback(deck)
       } catch {
-        alert('Uploaded deck is not formatted correctly!')
+        alert(t('alerts.notFormatted'))
       } finally {
         input.value = ''
       }
@@ -304,7 +304,7 @@ export class DeckMaker {
       return JSON.parse(json)
     } catch {
       AudioManager.playSFX('warning')
-      alert('Uploaded deck is not parsable!')
+      alert(t('alerts.notParsable'))
       return
     }
   }
@@ -318,24 +318,24 @@ export class DeckMaker {
     let warning = ''
     // verify that leader card is actually a leader and that its faction matches the deck faction
     if (card_dict[deck.leader].row !== 'leader')
-      warning += "'" + card_dict[deck.leader].name + "' is cannot be used as a leader\n"
+      warning += t('alerts.notLeader', { name: cardName(card_dict[deck.leader].name) }) + '\n'
     if (deck.faction != card_dict[deck.leader].deck)
       warning +=
-        "Leader '" + card_dict[deck.leader].name + "' doesn't match deck faction '" + deck.faction + "'.\n"
+        t('alerts.leaderFaction', { name: cardName(card_dict[deck.leader].name), faction: deck.faction }) + '\n'
     // check if cards exist and have correct faction & count
     const cards: IdCount[] = (deck.cards as [number, number][])
       .filter((c) => {
         const card = card_dict[c[0]]
         if (!card) {
-          warning += 'ID ' + c[0] + ' does not correspond to a card.\n'
+          warning += t('alerts.noCard', { id: c[0] }) + '\n'
           return false
         }
         if (![deck.faction, 'neutral', 'special', 'weather'].includes(card.deck)) {
-          warning += "'" + card.name + "' cannot be used in a deck of faction type '" + deck.faction + "'\n"
+          warning += t('alerts.wrongFaction', { name: cardName(card.name), faction: deck.faction }) + '\n'
           return false
         }
         if (Number(card.count) < c[1]) {
-          warning += 'Deck contains ' + c[1] + '/' + card.count + ' available ' + card.name + ' cards\n'
+          warning += t('alerts.tooMany', { count: c[1], max: card.count, name: cardName(card.name) }) + '\n'
           c[1] = Number(card.count)
           return true
         }
@@ -346,7 +346,7 @@ export class DeckMaker {
     if (warning) {
       if (silent) return null
       AudioManager.playSFX('warning')
-      if (!confirm(warning + '\n\nContinue importing deck?')) return null
+      if (!confirm(warning + '\n\n' + t('alerts.continueImport'))) return null
     }
     return { faction: deck.faction as string, leader: deck.leader as number, cards: cards }
   }
@@ -383,7 +383,7 @@ export class DeckMaker {
     const leader = { index: data.leader, count: 1 }
     const container = new CardContainer()
     container.cards = Card.getCardsFromIdCounts([leader, ...data.cards])
-    ui.queueCarousel(container, 1, () => {}, () => true, false, true, "Oponent's deck")
+    ui.queueCarousel(container, 1, () => {}, () => true, false, true, 'carousel.opponentDeck')
   }
 }
 

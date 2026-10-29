@@ -3,7 +3,6 @@ import { Card } from './card'
 import { Deck, Grave, Hand, HandAI } from './containers'
 import { ControllerAI, Controller } from './ai'
 import { ctx } from './context'
-import { factions } from './factions'
 import { ability_dict } from './abilities'
 import type { DeckData } from './types'
 import { sleep } from './util'
@@ -19,9 +18,8 @@ export class Player {
   deck!: Deck
   deck_data!: DeckData
   leader!: Card
+  /** player nickname; '' = use the translated default ("Player 1" / "Player 2") */
   name!: string
-  /** faction display name */
-  deckName!: string
 
   health = 2
   total = 0
@@ -48,7 +46,6 @@ export class Player {
     self.leader = new Card(deck.leader, self)
     self.reset()
     self.name = name
-    self.deckName = factions[deck.faction as keyof typeof factions].name
     return self
   }
 

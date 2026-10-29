@@ -2,31 +2,32 @@
   <div class="home">
     <div class="home-bg"></div>
     <div class="home-content">
-      <p class="home-kicker">The Witcher 3: Wild Hunt</p>
-      <h1 class="home-title">Gwent Classic</h1>
-      <p class="home-sub">Choose how you want to play</p>
+      <p class="home-kicker">{{ $t('home.kicker') }}</p>
+      <h1 class="home-title">{{ $t('home.title') }}</h1>
+      <p class="home-sub">{{ $t('home.subtitle') }}</p>
 
       <div class="home-modes">
         <RouterLink to="/offline" class="mode" @mouseenter="hoverSFX">
           <span class="mode-icon" :style="{ backgroundImage: icon('deck_shield_realms') }"></span>
           <span class="mode-text">
-            <span class="mode-name">Play vs AI</span>
-            <span class="mode-desc">Offline match against the computer. Build your deck and duel.</span>
+            <span class="mode-name">{{ $t('home.vsAi') }}</span>
+            <span class="mode-desc">{{ $t('home.vsAiDesc') }}</span>
           </span>
         </RouterLink>
 
         <RouterLink to="/online" class="mode" @mouseenter="hoverSFX">
           <span class="mode-icon" :style="{ backgroundImage: icon('deck_shield_nilfgaard') }"></span>
           <span class="mode-text">
-            <span class="mode-name">Play Online <em>soon</em></span>
-            <span class="mode-desc">Matchmaking, invite a friend by link or nickname, match history.</span>
+            <span class="mode-name">{{ $t('home.online') }} <em>{{ $t('home.soon') }}</em></span>
+            <span class="mode-desc">{{ $t('home.onlineDesc') }}</span>
           </span>
         </RouterLink>
       </div>
 
       <p class="home-credit">
-        Based on <a href="https://github.com/asundr/gwent-classic" target="_blank" rel="noopener">Gwent Classic</a>
-        by Arun Sundaram. Gwent and The Witcher are trademarks of CD PROJEKT S.A. Fan project, not for sale.
+        {{ $t('home.creditBefore') }}
+        <a href="https://github.com/asundr/gwent-classic" target="_blank" rel="noopener">{{ $t('home.creditLink') }}</a>
+        {{ $t('home.creditAfter') }}
       </p>
     </div>
   </div>

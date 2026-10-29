@@ -2,16 +2,13 @@
   <div class="home">
     <div class="home-bg"></div>
     <div class="home-content">
-      <p class="home-kicker">Coming soon</p>
-      <h1 class="home-title">Play Online</h1>
-      <p class="home-sub">The online mode will be powered by a Java / Spring Boot backend.</p>
+      <p class="home-kicker">{{ $t('online.kicker') }}</p>
+      <h1 class="home-title">{{ $t('online.title') }}</h1>
+      <p class="home-sub">{{ $t('online.subtitle') }}</p>
       <ul class="online-list">
-        <li>Sign in with Google (keeps your match history) or play as a guest with a nickname</li>
-        <li>Quick match: random opponent from the matchmaking queue</li>
-        <li>Invite a friend with a unique link, or challenge a player by nickname</li>
-        <li>Server-authoritative rules, so nobody can cheat by editing the client</li>
+        <li v-for="n in 4" :key="n">{{ $t('online.feature' + n) }}</li>
       </ul>
-      <RouterLink to="/" class="mode back">Back</RouterLink>
+      <RouterLink to="/" class="mode back">{{ $t('online.back') }}</RouterLink>
     </div>
   </div>
 </template>

@@ -10,7 +10,7 @@
     ></section>
 
     <section id="panel-left" class="panel">
-      <div id="exit-game" data-title="Exit game" @click="game.exitGame()"></div>
+      <div id="exit-game" :data-title="$t('game.exitGame')" @click="game.exitGame()"></div>
 
       <LeaderBox tag="op" :player="op" />
 
@@ -40,11 +40,11 @@
         id="pass-button"
         class="center"
         :class="{ noclick: ui.passNoclick }"
-        data-title="Pass round"
+        :data-title="$t('game.passRound')"
         @click="ui.passRound()"
         @mouseenter="hoverSFX"
       >
-        Pass
+        {{ $t('game.pass') }}
       </div>
     </section>
 
@@ -99,7 +99,7 @@
       :class="{ hide: ui.notif.hidden }"
       :style="ui.notif.opacity !== null ? { opacity: ui.notif.opacity } : {}"
     >
-      <div :id="'notif-' + ui.notif.name"></div>
+      <div :id="'notif-' + ui.notif.name" :data-text="ui.notif.name ? $t(notificationKey(ui.notif.name)) : ''"></div>
     </section>
 
     <EndScreen />
@@ -121,6 +121,7 @@ import { HAND_MARGIN, WEATHER_MARGIN } from '@/ui/layout'
 import { largeURL } from '@/ui/assets'
 import { hoverSFX, AudioManager } from '@/ui/audio'
 import { ensureEngine } from '@/ui/bootstrap'
+import { notificationKey } from '@/i18n/keys'
 import CardView from '@/ui/components/CardView.vue'
 import FieldRow from '@/ui/components/FieldRow.vue'
 import PlayerStats from '@/ui/components/PlayerStats.vue'
@@ -177,6 +178,7 @@ export default defineComponent({
       previewStyle,
       registerContainer,
       hoverSFX,
+      notificationKey,
     }
   },
 })

@@ -15,26 +15,24 @@
       <tbody>
         <tr>
           <th colspan="2"></th>
-          <th>Round 1</th>
-          <th>Round 2</th>
-          <th>Round 3</th>
+          <th v-for="n in 3" :key="n">{{ $t('end.round', { n }) }}</th>
         </tr>
         <tr>
-          <th colspan="2">{{ data ? data.names[0] : 'Geralt' }}</th>
+          <th colspan="2">{{ data ? data.names[0] || $t('game.player1') : $t('end.defaultMe') }}</th>
           <td v-for="(r, i) in rounds" :key="'me' + i" :style="{ color: r.meWon ? 'goldenrod' : '' }">{{ r.me }}</td>
         </tr>
         <tr>
-          <th colspan="2">{{ data ? data.names[1] : 'Opponent' }}</th>
+          <th colspan="2">{{ data ? data.names[1] || $t('game.player2') : $t('end.defaultOp') }}</th>
           <td v-for="(r, i) in rounds" :key="'op' + i" :style="{ color: r.opWon ? 'goldenrod' : '' }">{{ r.op }}</td>
         </tr>
       </tbody>
     </table>
     <p :class="{ hide: !data || data.result !== 'draw' }">
-      The battle cannot end in a draw. You can play a rematch using the same decks or surrender.
+      {{ $t('end.drawMessage') }}
     </p>
-    <button @mouseenter="hoverSFX" @click="game.returnToCustomization()">Customize</button>
-    <button @mouseenter="hoverSFX" @click="game.rematchGame()">Rematch</button>
-    <button @mouseenter="hoverSFX" @click="game.newOpponentGame()">New Game</button>
+    <button @mouseenter="hoverSFX" @click="game.returnToCustomization()">{{ $t('end.customize') }}</button>
+    <button @mouseenter="hoverSFX" @click="game.rematchGame()">{{ $t('end.rematch') }}</button>
+    <button @mouseenter="hoverSFX" @click="game.newOpponentGame()">{{ $t('end.newGame') }}</button>
   </section>
 </template>
 

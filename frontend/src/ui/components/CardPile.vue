@@ -5,7 +5,7 @@
     :id="'grave-' + tag"
     :ref="registerContainer('grave-' + tag)"
     class="grave cardpile"
-    data-title="View discards"
+    :data-title="$t('game.viewDiscards')"
     @click="player && ui.viewCardsInContainer(player.grave)"
     @mouseenter="player && player.grave.cards.length && hoverSFX()"
   >

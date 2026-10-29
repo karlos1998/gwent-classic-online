@@ -32,8 +32,6 @@ export class Card {
   holder: Player | null
   hero = false
   audio?: string
-  desc_name: string
-  desc: string
   noRemove?: boolean
   /** Extra data attached by the deck maker (leader picker) */
   data?: unknown
@@ -68,18 +66,6 @@ export class Card {
         if (ab.activated) this.activated.push(ab.activated)
       }
     }
-
-    if (this.row === 'leader') this.desc_name = 'Leader Ability'
-    else if (this.abilities.length > 0) this.desc_name = ability_dict[this.abilities[this.abilities.length - 1]].name ?? ''
-    else if (this.row === 'agile') this.desc_name = 'agile'
-    else if (this.hero) this.desc_name = 'hero'
-    else this.desc_name = ''
-
-    this.desc = this.row === 'agile' ? ability_dict['agile'].description! : ''
-    for (let i = this.abilities.length - 1; i >= 0; --i) {
-      this.desc += ability_dict[this.abilities[i]].description ?? ''
-    }
-    if (this.hero) this.desc += ability_dict['hero'].description
 
     // All engine objects are deeply reactive so the Vue UI re-renders on any change.
     return reactive(this) as Card

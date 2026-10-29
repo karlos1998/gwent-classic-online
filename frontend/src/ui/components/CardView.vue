@@ -5,7 +5,7 @@
     class="card"
     :class="{ hero: card.hero, special: card.faction === 'special', noclick: card.noclick && !ghost }"
     :style="rootStyle"
-    :data-title="card.name"
+    :data-title="cardName(card.name)"
     @click="onClick"
     @mouseenter="onEnter"
   >
@@ -26,6 +26,7 @@ import type { Card } from '@/engine'
 import { iconURL, smallURL } from '../assets'
 import { registerCard } from '../dom'
 import { hoverSFX } from '../audio'
+import { cardName } from '@/i18n'
 
 export default defineComponent({
   name: 'CardView',
@@ -102,7 +103,7 @@ export default defineComponent({
       if (!props.ghost && props.card.row !== 'leader') hoverSFX()
     }
 
-    return { isCombat, powerBg, rowBg, abilityBg, powerColor, animStyle, rootStyle, onClick, onEnter, registerCard }
+    return { isCombat, powerBg, rowBg, abilityBg, powerColor, animStyle, rootStyle, onClick, onEnter, registerCard, cardName }
   },
 })
 </script>

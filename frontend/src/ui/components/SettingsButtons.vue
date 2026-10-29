@@ -1,6 +1,6 @@
 <template>
   <div
-    data-title="Toggle music"
+    :data-title="$t('settings.music')"
     id="toggle-music"
     class="center settings-button"
     :class="{ 'deck-menu': ui.deckMenu, fade: !ui.musicPlaying }"
@@ -10,7 +10,7 @@
     <img :src="svg('music')" />
   </div>
   <div
-    data-title="Toggle sound effects"
+    :data-title="$t('settings.sfx')"
     id="toggle-sfx"
     class="center settings-button"
     :class="{ 'deck-menu': ui.deckMenu, fade: !Settings.soundEffects.enabled }"
@@ -20,7 +20,7 @@
     <img :src="svg('sfx')" />
   </div>
   <div
-    data-title="Toggle game messages"
+    :data-title="$t('settings.notifications')"
     id="toggle-notifications"
     class="center settings-button"
     :class="{ 'deck-menu': ui.deckMenu, fade: !Settings.notifications.enabled }"
