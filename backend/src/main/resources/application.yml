@@ -1,0 +1,75 @@
+# Gwent Classic Online - server configuration.
+# Every gwent.* value can be overridden with an environment variable, e.g. GWENT_GAME_TURN_TIMEOUT=90s
+spring:
+  application:
+    name: gwent-online-server
+  threads:
+    virtual:
+      enabled: true          # Java 21 virtual threads for request handling
+  jackson:
+    default-property-inclusion: non_null
+  main:
+    banner-mode: off
+
+server:
+  port: ${GWENT_SERVER_PORT:47321}
+  shutdown: graceful
+  forward-headers-strategy: native   # trust X-Forwarded-* from the reverse proxy (nginx) for client IPs
+  error:
+    include-stacktrace: never
+    include-message: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  info:
+    env:
+      enabled: true
+
+springdoc:
+  api-docs:
+    path: /api/docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+logging:
+  level:
+    com.gwentonline: INFO
+
+gwent:
+  session:
+    max-sessions: 5000
+    idle-ttl: 3m              # nickname stays reserved this long after the last connection closed
+  websocket:
+    path: /ws
+    max-message-bytes: 16384
+    auth-timeout: 10s
+    send-time-limit: 5s
+    send-buffer-bytes: 524288
+    idle-timeout: 75s         # clients ping every 25s
+    rate-capacity: 30
+    rate-refill-per-second: 10
+    max-rate-violations: 30
+  matchmaking:
+    confirm-timeout: 20s
+    decline-cooldown: 2m
+  game:
+    turn-timeout: 60s         # time for every move / decision
+    reconnect-grace: 45s      # a disconnected player loses after this time
+    pacing-factor: 1.0        # animation pauses (0 = none)
+    max-concurrent-games: 1000
+  cors:
+    allowed-origins: ${GWENT_ALLOWED_ORIGINS:http://localhost:47317,http://127.0.0.1:47317,http://localhost:47320,http://127.0.0.1:47320}
+  rate-limit:
+    sessions-per-minute: 10
+
+info:
+  app:
+    name: Gwent Classic Online
+    description: Authoritative game server
