@@ -1445,7 +1445,7 @@ main { background-image: url('/img/boardtest8.png'); }
 	
 	transition: margin-bottom 0.05s, margin-left .25s, margin-right .25s, transform 0.5s;
 	
-	z-index = 1;
+	/* original had an invalid "z-index = 1;" here (ignored by browsers, rejected by PostCSS) */
 }
 
 .deck-card .card { position : absolute; }
