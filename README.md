@@ -15,7 +15,7 @@ Wymagany Node.js 20+.
 ```bash
 cd frontend
 npm install
-npm run dev        # http://localhost:5173
+npm run dev        # http://localhost:47317
 npm run build      # produkcyjny build do frontend/dist
 npm run typecheck  # sprawdzenie typów (vue-tsc), opcjonalnie
 ```

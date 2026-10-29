@@ -7,8 +7,10 @@ export default defineConfig({
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },
+  preview: { port: 47318, strictPort: true },
   server: {
-    port: 5173,
+    port: 47317,
+    strictPort: true, // fail instead of silently picking another port
     // the Spring Boot backend (online mode) will run on 8080
     proxy: { '/api': 'http://localhost:8080', '/ws': { target: 'ws://localhost:8080', ws: true } },
   },
