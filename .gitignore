@@ -8,3 +8,5 @@ backend/build/
 backend/.gradle/
 .idea/
 *.iml
+# local configuration (copy of .env.example)
+.env

@@ -1,16 +1,37 @@
 # Gwent Classic Online
 
-Gwint z Wiedźmina 3 w przeglądarce — gra z botem (offline) i, w kolejnym etapie, gra online.
+Gwint z Wiedźmina 3 w przeglądarce — gra z botem (offline) i gra online z prawdziwym przeciwnikiem.
 
 ```
 gwent-classic-online/
-├── frontend/   Vue 3 + TypeScript + Vite  (gotowe: tryb offline 1:1 z oryginałem)
-└── backend/    Java / Spring Boot          (etap 2: tryb online)
+├── frontend/           Vue 3 + TypeScript + Vite (tryb offline 1:1 z oryginałem + klient trybu online)
+├── backend/            Java 21 + Spring Boot 3.5 + Gradle (serwer trybu online, bez bazy danych)
+├── docker-compose.yml  cały stos jednym poleceniem
+└── .env.example        konfiguracja (czas ruchu, limity, origin, przyszłe logowanie Google)
 ```
 
-## Uruchomienie (frontend)
+## Szybki start (Docker)
 
-Wymagany Node.js 20+.
+```bash
+cp .env.example .env          # opcjonalnie
+docker compose up --build     # http://localhost:47320
+```
+
+Kontener `web` (nginx) serwuje frontend i przekazuje `/api` oraz `/ws` do kontenera `server` (Spring Boot, port 47321,
+niewystawiony na zewnątrz). Żeby zagrać samemu ze sobą, otwórz grę w dwóch różnych przeglądarkach albo w oknie prywatnym
+(sesja gościa jest per karta).
+
+## Uruchomienie bez Dockera
+
+Backend (JDK 21; Gradle pobierze się sam przez wrapper):
+
+```bash
+cd backend
+./gradlew bootRun     # http://localhost:47321, dokumentacja API: /swagger-ui.html, zdrowie: /actuator/health
+./gradlew test
+```
+
+Frontend (Node.js 20+), dev server ma proxy `/api` i `/ws` na `localhost:47321`:
 
 ```bash
 cd frontend
@@ -20,8 +41,9 @@ npm run build      # produkcyjny build do frontend/dist
 npm run typecheck  # sprawdzenie typów (vue-tsc), opcjonalnie
 ```
 
-Ekran startowy: **Play vs AI** (offline) albo **Play Online** (na razie zapowiedź).
-Dodaj `?debug` do adresu (`/offline?debug`), żeby w konsoli mieć `window.__gwent` (stan gry, silnik) — przydatne przy testach.
+Ekran startowy: **Graj z komputerem** (offline) albo **Graj online**.
+Dodaj `?debug` do adresu (`/offline?debug`, `/online?debug`), żeby w konsoli mieć `window.__gwent` (stan gry, silnik)
+i `window.__gwentOnline` (sesja online) — przydatne przy testach.
 
 ## Języki (i18n)
 
@@ -75,7 +97,14 @@ src/
 │   ├── flight.ts    animacja lotu kart między rzędami (odpowiednik translateTo)
 │   ├── deckMaker.ts kreator talii, audio.ts, settings.ts (localStorage)
 │   └── components/  CardView, FieldRow, PlayerStats, LeaderBox, CardPile, CarouselView, PopupView, EndScreen, DeckCustomization…
-└── views/           HomeView (wybór trybu), OfflineGame (plansza), OnlineView (zapowiedź)
+├── online/          klient trybu online
+│   ├── protocol.ts  typy wiadomości (lustro rekordów z backendu)
+│   ├── api.ts, socket.ts   REST (sesja gościa) i WebSocket (auth, ping, automatyczny reconnect)
+│   ├── session.ts   maszyna stanów: pseudonim → lobby (szukanie / mecz znaleziony) → gra
+│   ├── mirror.ts    przenosi migawki serwera na obiekty planszy i animuje różnice (loty kart)
+│   ├── game.ts      kolejka wiadomości gry, prompty (tura, wymiana kart, wybór karty/rzędu), efekty, timer
+│   └── components/  NicknameForm, LobbyBar, SearchPanel, MatchFoundDialog, PlayerCard, TurnTimer, OpponentAway, ToastStack
+└── views/           HomeView (wybór trybu), OfflineGame, OnlineView — obie gry używają tej samej planszy (GameBoard)
 ```
 
 Obiekty silnika są reaktywne (Vue `reactive`), więc komponenty po prostu renderują ich stan. Silnik nie wie nic o Vue
@@ -96,22 +125,71 @@ które zawieszały grę albo psuły stan:
    teraz pyta, czy mimo to wczytać. Wczytana talia jest też od razu zapamiętywana.
 6. Dźwięk zablokowany przez przeglądarkę mógł zatrzymać grę (obietnica nigdy się nie kończyła).
 
-## Etap 2: tryb online (plan)
+## Tryb online
 
-Proponowany kształt, do doprecyzowania przy backendzie:
+**Przebieg:** *Graj online* → unikalny pseudonim (walidacja na żywo, ta sama reguła co na serwerze: 3–20 liter/cyfr,
+pojedyncze spacje lub `_ . -` tylko w środku, bez nazw zarezerwowanych, unikalność bez rozróżniania wielkości liter)
+→ lobby z kreatorem talii → *Szukaj przeciwnika* (licznik czasu, można anulować) → gdy ktoś szuka w tym samym czasie,
+obaj widzą okno „Gotów na pojedynek?” z pseudonimem, domyślnym awatarem i plakietką **Gość** (widok jest przygotowany
+pod konta: awatar, stała nazwa, liczba rozegranych gier) → obaj akceptują = start gry. Odrzucenie przez jednego wraca
+obu do szukania (ta para nie zostanie dobrana ponownie przez 2 min); brak odpowiedzi w 20 s anuluje propozycję.
 
-**Backend — Java 21 + Spring Boot 3**
+**W grze:** ta sama plansza co offline. Na górze pasek czasu ruchu (domyślnie 60 s, `gwent.game.turn-timeout`), który
+kurczy się od końca do początku i zmienia kolor złoty → bursztynowy → czerwony (ostatnie 10 s pulsuje); w turze
+przeciwnika jest przygaszony. Po upływie czasu serwer wykonuje domyślny, legalny ruch (tura → pas, wybór karty → losowa,
+wybór rzędu → walka wręcz). Przycisk wyjścia = poddanie się. Zerwane połączenie: klient sam się łączy ponownie
+(odświeżenie strony też wraca do gry), przeciwnik widzi odliczanie, a po 45 s (`reconnect-grace`) jest walkower.
 
-- **Konta:** logowanie Google (Spring Security OAuth2 / OIDC) albo gość z samym pseudonimem; sesja jako JWT/cookie.
-- **Dane:** PostgreSQL + JPA + Flyway — użytkownicy, talie (ten sam format JSON co teraz), historia meczów (talie, wynik, rundy).
-- **Lobby:**
-  - *Szybka gra* — kolejka matchmakingu, łączy dwóch czekających graczy,
-  - *Zaproszenie linkiem* — `/join/{kod}`, jednorazowy kod pokoju, ważny np. 15 min,
-  - *Wyzwanie po pseudonimie* — powiadomienie do zalogowanego gracza, akceptuj/odrzuć.
-- **Gra:** serwer jest autorytatywny — reguły (port `src/engine` do Javy) liczą się na serwerze, klient wysyła tylko intencje
-  (`PLAY_CARD {cardId, row}`, `PASS`, `LEADER`, `CHOOSE {cardIds}`, `CHOOSE_ROW {row}`), a serwer rozsyła zdarzenia i stan.
-  Dzięki temu nie da się oszukiwać edytując klienta, a ręka przeciwnika nigdy nie trafia do przeglądarki.
-- **Transport:** WebSocket (STOMP), reconnect do trwającego meczu, limit czasu na turę.
+### Backend
 
-**Frontend** — nowy widok lobby + logowanie; plansza zostaje ta sama, a zamiast lokalnego AI ruchy przeciwnika
-przychodzą z serwera (nowa implementacja `UIPort`/kontrolera gracza zdalnego). Vite ma już proxy `/api` i `/ws` na `localhost:8080`.
+Java 21, Spring Boot 3.5, Gradle (Kotlin DSL), Lombok, Bean Validation, Caffeine, Actuator + Micrometer,
+springdoc-openapi. Bez bazy danych — wszystko żyje w pamięci przez czas sesji.
+
+```
+com.gwentonline
+├── game/engine      silnik gry niezależny od Springa (port src/engine 1:1, zweryfikowany ~99 000 partii bot vs bot)
+├── game/room        GameRoom (jedna gra = jeden wirtualny wątek + kolejka wejść), SnapshotFactory, EventTranslator
+├── matchmaking      kolejka, propozycja meczu, akceptacja / odrzucenie / timeout, cooldown pary
+├── player           sesje gości, NicknamePolicy + @ValidNickname, REST /api/v1/sessions
+├── transport        WebSocket: uwierzytelnienie, limity, parsowanie, dispatch
+├── protocol         rekordy wiadomości (sealed interfaces, jawna lista typów)
+├── config, common   właściwości gwent.* (walidowane), CORS, rate limiting, ProblemDetail z kodem błędu
+```
+
+Komunikacja: `POST /api/v1/sessions {nickname}` zwraca token sesji gościa, cała reszta idzie przez WebSocket `/ws`
+(pierwsza wiadomość `auth`). Klient wysyła tylko intencje (`playCard`, `pass`, `activateLeader`, `chooseCard`, …) z id
+promptu; serwer liczy całą grę i wysyła każdemu graczowi **jego własną** migawkę stanu, efekty (powiadomienia, dźwięki,
+animacje) i prompty z terminem. Kody błędów (`errors.<kod>`) są tłumaczone po stronie klienta.
+
+### Bezpieczeństwo
+
+- **Serwer jest autorytatywny.** Klient niczego nie liczy; każdy ruch jest walidowany (karta w ręce, legalny rząd,
+  cel wabika, dostępność dowódcy, aktualny prompt). Nieprawidłowe ruchy są odrzucane, zegar tury dalej biegnie.
+- **Brak wycieku ukrytych informacji.** Migawka jest budowana osobno dla każdego gracza (`SnapshotFactory`): ręka
+  przeciwnika i obie talie to wyłącznie liczby, karty mają losowe, nieprzewidywalne id na grę. Animacje ukrytych kart
+  są odfiltrowywane. Jedyny wyjątek to zdolność Emhyra „Imperator Nilfgaardu” — dostaje się wtedy dokładnie 3 losowe
+  karty z ręki przeciwnika, tylko ten gracz i tylko te karty (zgodnie z zasadami gry).
+- **Sesje:** token 256-bit z `SecureRandom`, trzymany w `sessionStorage` (nie w cookies, więc bez CSRF); druga karta
+  z tym samym tokenem przejmuje sesję (stara dostaje kod 4001). Nieaktywne sesje wygasają po 3 min.
+- **Limity:** rozmiar wiadomości WS (16 KB), token bucket na połączenie (zalewanie → zamknięcie 4029), 10 nowych sesji
+  na minutę z jednego IP, czas na `auth` (10 s), limit sesji (5000) i równoległych gier (1000), bufor wysyłki
+  z limitem czasu (wolny klient nie blokuje gry), dozwolone originy dla WebSocketu i CORS.
+- **Parsowanie:** osobny, ścisły `ObjectMapper` (nieznane pola = błąd, bez default typing, jawna lista podtypów),
+  każdy rekord sam waliduje swoje pola.
+- **Współbieżność:** każda gra działa na własnym wirtualnym wątku i jest jedynym właścicielem swojego stanu, więc
+  dziesiątki czy setki równoczesnych gier nie dzielą żadnych blokad; matchmaking ma jedną blokadę, a wiadomości są
+  wysyłane dopiero po jej zwolnieniu. Test obciążeniowy: 100 równoległych par botów po WebSocketach — wszystkie
+  partie zakończone, zero błędów protokołu, zero wycieków ręki przeciwnika.
+- Kontener backendu działa jako nie-root, z systemem plików tylko do odczytu; nginx dodaje nagłówki bezpieczeństwa.
+
+### Konfiguracja
+
+Wszystkie wartości są w `backend/src/main/resources/application.yml` (`gwent.*`) i każdą można nadpisać zmienną
+środowiskową, np. `GWENT_GAME_TURN_TIMEOUT=90s` — patrz `.env.example`.
+
+### Dalej
+
+- Konta i logowanie Google — opcjonalne, włączane przez administratora w `.env` (`GWENT_AUTH_GOOGLE_ENABLED`), domyślnie
+  wyłączone, więc nikt stawiający własny serwer nie musi niczego konfigurować. Protokół i widoki mają już miejsce na
+  `ACCOUNT` (awatar, liczba gier).
+- Zaproszenie znajomego linkiem i wyzwanie po pseudonimie.

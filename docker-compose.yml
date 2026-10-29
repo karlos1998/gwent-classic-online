@@ -1,0 +1,29 @@
+# Gwent Classic Online - full stack: `docker compose up --build`, then open http://localhost:47320
+services:
+  server:
+    build: ./backend
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      GWENT_ALLOWED_ORIGINS: ${GWENT_ALLOWED_ORIGINS:-http://localhost:47320,http://127.0.0.1:47320}
+    # not published: only reachable through the web container (add "47321:47321" to call it directly)
+    expose:
+      - "47321"
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+
+  web:
+    build: ./frontend
+    restart: unless-stopped
+    ports:
+      - "${GWENT_WEB_PORT:-47320}:80"
+    depends_on:
+      server:
+        condition: service_healthy
+    security_opt:
+      - no-new-privileges:true
