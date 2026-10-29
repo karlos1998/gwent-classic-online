@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.DS_Store
+*.local
+# backend (Spring)
+backend/target/
+backend/build/
+backend/.gradle/
+.idea/
+*.iml
