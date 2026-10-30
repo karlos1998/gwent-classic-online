@@ -21,6 +21,22 @@ Kontener `web` (nginx) serwuje frontend i przekazuje `/api` oraz `/ws` do konten
 niewystawiony na zewnątrz). Żeby zagrać samemu ze sobą, otwórz grę w dwóch różnych przeglądarkach albo w oknie prywatnym
 (sesja gościa jest per karta).
 
+## Produkcja
+
+Adres: https://gwent.letscode.it. Push do `main` uruchamia `.github/workflows/deploy-production.yml`:
+sprawdzenie typów i backendu, budowę dwóch obrazów Docker, przesłanie przez SSH i start z kontrolą zdrowia.
+Repozytorium wymaga sekretów `SERVER_HOST`, `SERVER_USER`, `SERVER_SSH_KEY` i `SERVER_KNOWN_HOSTS`
+(zweryfikowany klucz hosta SSH). Forki nie uruchamiają deploymentu na ten serwer.
+
+Na serwerze aplikacja jest w `/opt/apps/gwent-classic-online`, korzysta z zewnętrznej sieci
+`nginx-proxy` i automatycznego certyfikatu Let's Encrypt. Backend pozostaje w prywatnej sieci;
+nie trzeba konfigurować bazy ani tokenów aplikacji. DNS `gwent.letscode.it` musi wskazywać serwer.
+
+`TAG` przechowuje wdrożony commit. Przy błędzie kontroli zdrowia skrypt przywraca poprzednie obrazy.
+Ręczny rollback: w katalogu aplikacji ustaw `TAG=<poprzedni commit>` i uruchom
+`docker compose -f docker-compose.production.yml up -d --wait`. Stan gier jest w pamięci,
+więc restart backendu przerywa aktywne mecze i sesje.
+
 ## Uruchomienie bez Dockera
 
 Backend (JDK 21; Gradle pobierze się sam przez wrapper):
