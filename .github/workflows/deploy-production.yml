@@ -55,4 +55,4 @@ jobs:
           scp -i ~/.ssh/deploy_key artifact/* "$target:$staging/"
           ssh -i ~/.ssh/deploy_key "$target" "bash '$staging/activate.sh' '$staging'"
       - name: Verify public endpoint
-        run: curl --fail --retry 12 --retry-delay 10 --retry-all-errors https://gwent.letscode.it/ -o /dev/null
+        run: curl --fail --location --max-redirs 5 --max-time 20 --retry 12 --retry-delay 10 --retry-all-errors https://gwent.letscode.it/ -o /dev/null
