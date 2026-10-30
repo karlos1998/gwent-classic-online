@@ -34,6 +34,6 @@ networks:
   gwent:
     ipam:
       config:
-        - subnet: 172.30.47.0/28
+        - subnet: 192.168.48.0/28
   nginx-proxy:
     external: true
