@@ -82,9 +82,6 @@ const en = {
       redraw: 'Redraw',
     },
     game: {
-      surrender: 'Surrender',
-      surrenderTitle: 'Surrender this game?',
-      surrenderDescription: 'Your opponent wins the match.',
       opponentAway: '{name} lost the connection - they forfeit in',
     },
     end: {
@@ -110,7 +107,8 @@ const en = {
     passed: 'Passed',
     pass: 'Pass',
     passRound: 'Pass round (hold Space)',
-    exitGame: 'Exit game',
+    surrenderHint: 'Give up this game (Esc)',
+    surrender: 'Surrender',
     viewLeader: 'View leader',
     playLeader: 'Play leader',
     viewDiscards: 'View discards',
@@ -131,6 +129,7 @@ const en = {
     factions: { key: 'Q / E', action: 'Previous / next faction in the deck builder' },
   },
   end: {
+    youSurrendered: 'You surrendered.',
     round: 'Round {n}',
     defaultMe: 'Geralt',
     defaultOp: 'Opponent',
@@ -140,10 +139,9 @@ const en = {
     newGame: 'New Game',
   },
   popup: {
-    exitTitle: 'Quit curent game?',
-    exitDescription: 'This will return you to the deck customization menu.',
+    surrenderTitle: 'Surrender this game?',
+    surrenderDescription: 'Your opponent wins the match.',
     resume: 'Resume',
-    exit: 'Exit',
     scoiataelTitle: 'Would you like to go first?',
     scoiataelDescription: "The Scoia'tael faction perk allows you to decide who will get to go first.",
     goFirst: 'Go First',

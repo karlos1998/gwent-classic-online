@@ -11,7 +11,10 @@
     ></section>
 
     <section id="panel-left" class="panel">
-      <div id="exit-game" :data-title="$t(exitTitle)" @click="$emit('exit')"></div>
+      <button id="exit-game" type="button" :title="$t('game.surrenderHint')" @click="$emit('exit')" @mouseenter="hoverSFX">
+        <img :src="flagIcon" alt="" />
+        <span>{{ $t('game.surrender') }}</span>
+      </button>
 
       <LeaderBox tag="op" :player="op" />
 
@@ -117,7 +120,7 @@ import { Card, ctx } from '@/engine'
 import { ui } from '@/ui/store'
 import { registerContainer } from '@/ui/dom'
 import { HAND_MARGIN, WEATHER_MARGIN } from '@/ui/layout'
-import { largeURL } from '@/ui/assets'
+import { largeURL, svgPath } from '@/ui/assets'
 import { hoverSFX } from '@/ui/audio'
 import { ensureEngine } from '@/ui/bootstrap'
 import { notificationKey } from '@/i18n/keys'
@@ -136,8 +139,6 @@ export default defineComponent({
   name: 'GameBoard',
   components: { CardView, FieldRow, PlayerStats, LeaderBox, CardPile, CardDescription, CarouselView, PopupView, EndScreen },
   props: {
-    /** i18n key of the exit button tooltip */
-    exitTitle: { type: String, default: 'game.exitGame' },
   },
   emits: ['exit'],
   setup(_props, { emit }) {
@@ -155,6 +156,7 @@ export default defineComponent({
     return {
       ui,
       hold,
+      flagIcon: svgPath('surrender'),
       board: ctx.board,
       weather: ctx.weather,
       me,
@@ -172,6 +174,40 @@ export default defineComponent({
 </script>
 
 <style>
+/* surrender button (replaces the original exit icon) */
+#exit-game {
+  top: 1.1vw;
+  left: 1vw;
+  width: auto;
+  height: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.45vw;
+  padding: 0.35vw 0.8vw 0.35vw 0.55vw;
+  font-family: inherit;
+  font-size: 0.85vw;
+  letter-spacing: 0.06em;
+  color: #c9a98a;
+  background: linear-gradient(rgba(40, 18, 12, 0.85), rgba(18, 9, 6, 0.9));
+  background-image: linear-gradient(rgba(40, 18, 12, 0.85), rgba(18, 9, 6, 0.9));
+  border: 0.08vw solid #6b2a1c;
+  border-radius: 0.2vw;
+  box-shadow: 0 0 0.4vw rgba(0, 0, 0, 0.7);
+  opacity: 0.8;
+  cursor: pointer;
+  transition: opacity 0.15s, box-shadow 0.15s, color 0.15s;
+}
+#exit-game img {
+  width: 1vw;
+  height: 1vw;
+}
+#exit-game:hover {
+  opacity: 1;
+  color: #f0d2c4;
+  box-shadow: 0 0 0.8vw rgba(160, 56, 42, 0.6);
+  filter: none;
+}
+
 /* hold Space to pass: the button fills up like the original's hold prompt */
 #pass-button.holding::before {
   content: '';

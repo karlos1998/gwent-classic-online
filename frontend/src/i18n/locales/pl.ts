@@ -84,9 +84,6 @@ const pl: Messages = {
       redraw: 'Wymiana kart',
     },
     game: {
-      surrender: 'Poddaj się',
-      surrenderTitle: 'Poddać tę grę?',
-      surrenderDescription: 'Przeciwnik wygra mecz.',
       opponentAway: '{name} utracił połączenie - walkower za',
     },
     end: {
@@ -112,7 +109,8 @@ const pl: Messages = {
     passed: 'Pas',
     pass: 'Pas',
     passRound: 'Spasuj rundę (przytrzymaj Spację)',
-    exitGame: 'Wyjdź z gry',
+    surrenderHint: 'Oddaj tę partię (Esc)',
+    surrender: 'Poddaj się',
     viewLeader: 'Zobacz dowódcę',
     playLeader: 'Użyj dowódcy',
     viewDiscards: 'Zobacz odrzucone karty',
@@ -133,6 +131,7 @@ const pl: Messages = {
     factions: { key: 'Q / E', action: 'Poprzednia / następna frakcja w kreatorze talii' },
   },
   end: {
+    youSurrendered: 'Poddałeś się.',
     round: 'Runda {n}',
     defaultMe: 'Geralt',
     defaultOp: 'Przeciwnik',
@@ -142,10 +141,9 @@ const pl: Messages = {
     newGame: 'Nowa gra',
   },
   popup: {
-    exitTitle: 'Przerwać bieżącą grę?',
-    exitDescription: 'Wrócisz do ekranu edycji talii.',
+    surrenderTitle: 'Poddać tę grę?',
+    surrenderDescription: 'Przeciwnik wygra partię.',
     resume: 'Wróć do gry',
-    exit: 'Wyjdź',
     scoiataelTitle: 'Chcesz zacząć pierwszy?',
     scoiataelDescription: 'Zdolność frakcji Scoia\'tael pozwala ci zdecydować, kto zaczyna.',
     goFirst: 'Zaczynam',

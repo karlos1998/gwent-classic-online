@@ -238,7 +238,7 @@ export class Game {
   }
 
   // Sets up and displays the end-game screen
-  async endGame() {
+  async endGame(message?: string) {
     const me = ctx.me,
       op = ctx.op
     const rounds = [0, 1, 2].map((i) => {
@@ -261,21 +261,32 @@ export class Game {
       playSFX('game_lose')
       result = 'lose'
     }
-    ctx.ui.showEndScreen({ result, names: [me.name, op.name], rounds })
+    ctx.ui.showEndScreen({ result, names: [me.name, op.name], rounds, message })
     ctx.ui.enablePlayer(true)
     this.setState(GameState.END_SCREEN)
   }
 
+  // The exit button: surrendering ends the game as a loss (same as the online mode)
   exitGame() {
+    if (this.state !== GameState.PLAYING) return
     playSFX('warning')
     ctx.ui.popup(
       'popup.resume',
       () => {},
-      'popup.exit',
-      () => this.returnToCustomization(),
-      'popup.exitTitle',
-      'popup.exitDescription',
+      'game.surrender',
+      () => this.surrender(),
+      'popup.surrenderTitle',
+      'popup.surrenderDescription',
     )
+  }
+
+  surrender() {
+    if (this.state !== GameState.PLAYING) return
+    runtime.epoch++ // stops the running turn (AI moves, animations)
+    ctx.ui.carouselExit()
+    ctx.ui.hidePreview()
+    ctx.me.health = 0
+    this.endGame('end.youSurrendered')
   }
 
   // Returns the client to the deck customization screen

@@ -99,7 +99,7 @@
       <p>{{ $t('deck.heroCards') }}</p>
       <p>{{ dm.stats.hero }}</p>
     </div>
-    <button id="start-game" :class="{ online }" @click="onStart" @mouseenter="hoverSFX">{{ $t(online ? 'online.lobby.findOpponent' : 'deck.startGame') }}</button>
+    <button id="start-game" @click="onStart" @mouseenter="hoverSFX">{{ $t(online ? 'online.lobby.findOpponent' : 'deck.startGame') }}</button>
     <div v-if="!online" id="opponent-preview" class="center">
       <div>
         <p>{{ $t('deck.opponentsDeck') }}</p>
@@ -247,6 +247,33 @@ export default defineComponent({
   pointer-events: none;
   filter: saturate(0.45) brightness(0.7);
   transition: filter 0.3s;
+}
+
+/* ---- start button ---- */
+#deck-customization #start-game {
+  top: 84.5%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: auto;
+  height: auto;
+  min-width: 11vw;
+  padding: 0.55vw 1.6vw;
+  font-family: inherit;
+  font-size: 1.1vw;
+  font-weight: bold;
+  letter-spacing: 0.08em;
+  color: #f3e2b4;
+  background: linear-gradient(#4a3812, #241a07);
+  border: 0.1vw solid #b8892a;
+  border-radius: 0.15vw;
+  box-shadow: 0 0 0.8vw rgba(218, 165, 32, 0.25), inset 0 0 0.6vw rgba(0, 0, 0, 0.6);
+  text-shadow: 0 0.08vw 0.1vw #000;
+  cursor: pointer;
+  transition: box-shadow 0.15s, filter 0.15s;
+}
+#deck-customization #start-game:hover {
+  filter: brightness(1.15);
+  box-shadow: 0 0 1.4vw rgba(218, 165, 32, 0.55), inset 0 0 0.6vw rgba(0, 0, 0, 0.5);
 }
 
 /* ---- faction tabs (the active shield replaces the shield next to the faction name) ---- */

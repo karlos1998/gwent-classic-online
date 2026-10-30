@@ -33,7 +33,7 @@
       </template>
 
       <template v-else-if="online.game">
-        <GameBoard exit-title="online.game.surrender" @exit="confirmSurrender" />
+        <GameBoard @exit="confirmSurrender" />
         <TurnTimer :timer="online.game.view.timer" />
         <OpponentAway
           v-if="online.game.view.opponentAway"
@@ -94,10 +94,10 @@ export default defineComponent({
       ui.popup(
         'popup.resume',
         () => {},
-        'online.game.surrender',
+        'game.surrender',
         () => online.game?.surrender(),
-        'online.game.surrenderTitle',
-        'online.game.surrenderDescription',
+        'popup.surrenderTitle',
+        'popup.surrenderDescription',
       )
     }
 
@@ -141,11 +141,5 @@ export default defineComponent({
   min-width: 160px;
   font-size: 1.2em;
   color: goldenrod;
-}
-#start-game.online {
-  min-width: 6%;
-  width: auto;
-  padding: 0 0.8vw;
-  transform: translateX(calc(-50% + 3vw));
 }
 </style>

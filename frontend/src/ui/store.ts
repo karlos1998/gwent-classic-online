@@ -235,6 +235,8 @@ interface PopupState extends Fadeable {
   alpha: number
   yes: () => void
   no: () => void
+  /** main.noclick before the popup was opened (restored when it closes) */
+  restoreNoclick: boolean
 }
 
 export class UIStore implements UIPort {
@@ -264,6 +266,7 @@ export class UIStore implements UIPort {
     alpha: 0.95,
     yes: () => {},
     no: () => {},
+    restoreNoclick: true,
     opacity: null,
     hidden: true,
   }
@@ -427,6 +430,7 @@ export class UIStore implements UIPort {
     p.yesName = yesName ? yesName : 'popup.yes'
     p.noName = noName ? noName : 'popup.no'
     p.alpha = alpha
+    if (!p.visible) p.restoreNoclick = this.mainNoclick
     p.visible = true
     this.enablePlayer(true)
     await sleepUntil(() => !this.popupState.visible)
@@ -434,7 +438,8 @@ export class UIStore implements UIPort {
 
   popupSelect(yes: boolean) {
     const p = this.popupState
-    this.enablePlayer(false)
+    // (fix) the original always disabled the board here, so "Resume" during your own turn froze the game
+    this.mainNoclick = p.restoreNoclick
     p.visible = false
     if (yes) p.yes()
     else p.no()
