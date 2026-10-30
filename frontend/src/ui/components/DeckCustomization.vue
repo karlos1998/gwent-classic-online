@@ -24,6 +24,7 @@
         :class="{ hide: !x.count }"
         :style="{ backgroundImage: large(x.index) }"
         @click="dm.select(i, true)"
+        @contextmenu.prevent.stop="inspectCardIndex(x.index)"
         @mouseenter="hoverSFX"
       >
         <div>{{ x.count }}</div>
@@ -38,6 +39,7 @@
         :class="{ hide: !x.count }"
         :style="{ backgroundImage: large(x.index) }"
         @click="dm.select(i, false)"
+        @contextmenu.prevent.stop="inspectCardIndex(x.index)"
         @mouseenter="hoverSFX"
       >
         <div>{{ x.count }}</div>
@@ -46,7 +48,12 @@
     </div>
     <div id="card-leader">
       <p>{{ $t('deck.leader') }}</p>
-      <div :style="{ backgroundImage: leaderImg }" @click="dm.selectLeader()" @mouseenter="hoverSFX"></div>
+      <div
+        :style="{ backgroundImage: leaderImg }"
+        @click="dm.selectLeader()"
+        @contextmenu.prevent.stop="dm.leader && inspectCardIndex(dm.leader.index)"
+        @mouseenter="hoverSFX"
+      ></div>
     </div>
     <div id="deck-stats">
       <p>{{ $t('deck.totalCards') }}</p>
@@ -95,6 +102,7 @@ import { computed, defineComponent } from 'vue'
 import { card_dict } from '@/engine'
 import { ui } from '../store'
 import { useDeckMaker } from '../deckMaker'
+import { inspectCardIndex } from '../inspect'
 import { iconURL, largeURL } from '../assets'
 import { hoverSFX, AudioManager } from '../audio'
 
@@ -129,7 +137,7 @@ export default defineComponent({
       }
       emit('start', dm.toDeckDto())
     }
-    return { ui, dm, large, shield, leaderImg, bankFaux, deckFaux, opShield, onUpload, onUploadOpponent, onStart, hoverSFX }
+    return { ui, dm, large, shield, leaderImg, bankFaux, deckFaux, opShield, onUpload, onUploadOpponent, onStart, hoverSFX, inspectCardIndex }
   },
 })
 </script>

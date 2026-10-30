@@ -1,7 +1,7 @@
 <template>
   <!-- Same DOM structure as the original createCardElem(): power / row / ability / animation overlay -->
   <div
-    :ref="ghost ? undefined : registerCard(card.uid)"
+    :ref="ghost ? undefined : registerCard(card.uid, card)"
     class="card"
     :class="{ hero: card.hero, special: card.faction === 'special', noclick: card.noclick && !ghost }"
     :style="rootStyle"

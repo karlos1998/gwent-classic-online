@@ -142,6 +142,21 @@ const en = {
     yes: 'Yes',
     no: 'No',
   },
+  inspect: {
+    close: 'Click or right-click anywhere (or press Esc) to close',
+    leader: 'Leader',
+    weather: 'Weather card',
+    special: 'Special card',
+    hero: 'Hero',
+    neutral: 'Neutral',
+    strength: 'Strength {n}',
+    row: {
+      close: 'Close combat',
+      ranged: 'Ranged combat',
+      siege: 'Siege',
+      agile: 'Agile (close or ranged)',
+    },
+  },
   carousel: {
     redraw: 'Choose up to 2 cards to redraw.',
     opponentDeck: "Oponent's deck",

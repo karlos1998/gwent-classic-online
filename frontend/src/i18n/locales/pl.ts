@@ -144,6 +144,21 @@ const pl: Messages = {
     yes: 'Tak',
     no: 'Nie',
   },
+  inspect: {
+    close: 'Kliknij lub kliknij prawym przyciskiem w dowolnym miejscu (albo Esc), aby zamknąć',
+    leader: 'Dowódca',
+    weather: 'Karta pogody',
+    special: 'Karta specjalna',
+    hero: 'Bohater',
+    neutral: 'Neutralna',
+    strength: 'Siła {n}',
+    row: {
+      close: 'Walka wręcz',
+      ranged: 'Walka dystansowa',
+      siege: 'Oblężenie',
+      agile: 'Zwinna (wręcz lub dystansowa)',
+    },
+  },
   carousel: {
     redraw: 'Wybierz maksymalnie 2 karty do wymiany.',
     opponentDeck: 'Talia przeciwnika',
