@@ -11,6 +11,7 @@ services:
     # not published: only reachable through the web container (add "47321:47321" to call it directly)
     expose:
       - "47321"
+    networks: [gwent]
     read_only: true
     tmpfs:
       - /tmp
@@ -20,6 +21,7 @@ services:
   web:
     build: ./frontend
     restart: unless-stopped
+    networks: [gwent]
     ports:
       - "${GWENT_WEB_PORT:-47320}:80"
     depends_on:
@@ -27,3 +29,11 @@ services:
         condition: service_healthy
     security_opt:
       - no-new-privileges:true
+
+# Own small subnet instead of Docker's default address pools (those can be exhausted by other
+# projects: "all predefined address pools have been fully subnetted"). Change it in .env on a collision.
+networks:
+  gwent:
+    ipam:
+      config:
+        - subnet: ${GWENT_NETWORK_SUBNET:-172.30.47.0/28}
