@@ -21,28 +21,31 @@
   </div>
 
   <template v-else>
-    <!-- lobby: the deck builder of the offline mode, the start button searches for an opponent -->
-    <template v-if="online.phase === 'lobby'">
-      <DeckCustomization online :locked="!!online.search || !!online.match" @start="online.findMatch($event)" />
-      <LobbyBar />
-      <SearchPanel v-if="online.search" />
-      <MatchFoundDialog v-if="online.match" :match="online.match" />
-    </template>
+    <GameStage>
+      <!-- lobby: the deck builder of the offline mode, the start button searches for an opponent -->
+      <template v-if="online.phase === 'lobby'">
+        <DeckCustomization online :locked="!!online.search || !!online.match" @start="online.findMatch($event)" />
+        <!-- leader selection of the deck builder -->
+        <CarouselView />
+        <PopupView />
+        <LobbyBar />
+        <SearchPanel v-if="online.search" />
+      </template>
 
-    <template v-else-if="online.game">
-      <GameBoard exit-title="online.game.surrender" @exit="confirmSurrender" />
-      <TurnTimer :timer="online.game.view.timer" />
-      <OpponentAway
-        v-if="online.game.view.opponentAway"
-        :ends-at="online.game.view.opponentAway.endsAt"
-        :name="online.opponent?.nickname ?? ''"
-      />
-      <div v-if="online.socketState === 'reconnecting'" class="opponent-away reconnecting">
-        <span class="oa-dot"></span>{{ $t('online.connection.reconnecting') }}
-      </div>
-    </template>
-
-    <SettingsButtons />
+      <template v-else-if="online.game">
+        <GameBoard exit-title="online.game.surrender" @exit="confirmSurrender" />
+        <TurnTimer :timer="online.game.view.timer" />
+        <OpponentAway
+          v-if="online.game.view.opponentAway"
+          :ends-at="online.game.view.opponentAway.endsAt"
+          :name="online.opponent?.nickname ?? ''"
+        />
+        <div v-if="online.socketState === 'reconnecting'" class="opponent-away reconnecting">
+          <span class="oa-dot"></span>{{ $t('online.connection.reconnecting') }}
+        </div>
+      </template>
+    </GameStage>
+    <MatchFoundDialog v-if="online.phase === 'lobby' && online.match" :match="online.match" />
   </template>
 
   <ToastStack />
@@ -56,7 +59,9 @@ import { AudioManager } from '@/ui/audio'
 import { ensureEngine } from '@/ui/bootstrap'
 import GameBoard from '@/ui/components/GameBoard.vue'
 import DeckCustomization from '@/ui/components/DeckCustomization.vue'
-import SettingsButtons from '@/ui/components/SettingsButtons.vue'
+import GameStage from '@/ui/components/GameStage.vue'
+import CarouselView from '@/ui/components/CarouselView.vue'
+import PopupView from '@/ui/components/PopupView.vue'
 import NicknameForm from '@/online/components/NicknameForm.vue'
 import LobbyBar from '@/online/components/LobbyBar.vue'
 import SearchPanel from '@/online/components/SearchPanel.vue'
@@ -70,7 +75,9 @@ export default defineComponent({
   components: {
     GameBoard,
     DeckCustomization,
-    SettingsButtons,
+    GameStage,
+    CarouselView,
+    PopupView,
     NicknameForm,
     LobbyBar,
     SearchPanel,
@@ -95,7 +102,6 @@ export default defineComponent({
     }
 
     onMounted(() => {
-      document.body.classList.add('gwent-board')
       initMusic()
       online.resume()
       // automated UI tests: /online?debug exposes the session next to window.__gwent

@@ -40,7 +40,8 @@
       <div
         id="pass-button"
         class="center"
-        :class="{ noclick: ui.passNoclick }"
+        :class="{ noclick: ui.passNoclick, holding: hold > 0 }"
+        :style="{ '--hold': hold }"
         :data-title="$t('game.passRound')"
         @click="ui.passRound()"
         @mouseenter="hoverSFX"
@@ -120,6 +121,7 @@ import { largeURL } from '@/ui/assets'
 import { hoverSFX } from '@/ui/audio'
 import { ensureEngine } from '@/ui/bootstrap'
 import { notificationKey } from '@/i18n/keys'
+import { useBoardKeys } from '@/ui/keys'
 import CardView from './CardView.vue'
 import FieldRow from './FieldRow.vue'
 import PlayerStats from './PlayerStats.vue'
@@ -138,8 +140,9 @@ export default defineComponent({
     exitTitle: { type: String, default: 'game.exitGame' },
   },
   emits: ['exit'],
-  setup() {
+  setup(_props, { emit }) {
     const state = ensureEngine()
+    const { hold } = useBoardKeys(() => emit('exit'))
     // ctx.me / ctx.op are re-assigned when a game starts; expose them reactively
     const me = computed(() => state.me)
     const op = computed(() => state.op)
@@ -151,6 +154,7 @@ export default defineComponent({
     )
     return {
       ui,
+      hold,
       board: ctx.board,
       weather: ctx.weather,
       me,
@@ -166,3 +170,19 @@ export default defineComponent({
   },
 })
 </script>
+
+<style>
+/* hold Space to pass: the button fills up like the original's hold prompt */
+#pass-button.holding::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform-origin: left;
+  transform: scaleX(var(--hold));
+  background: linear-gradient(90deg, rgba(218, 165, 32, 0.15), rgba(218, 165, 32, 0.45));
+  pointer-events: none;
+}
+#pass-button.holding {
+  box-shadow: 0 0 0.8vw rgba(218, 165, 32, calc(var(--hold) * 0.9));
+}
+</style>

@@ -6,6 +6,7 @@
 import { h, render } from 'vue'
 import { ctx, Deck, HandAI, Row, sleep, type Card, type CardContainer } from '@/engine'
 import { cardElement, containerElement } from './dom'
+import { stageZoom } from './stage'
 import CardView from './components/CardView.vue'
 
 interface Box {
@@ -16,8 +17,8 @@ interface Box {
 }
 
 const vw = () => window.innerWidth / 100
-const cardW = () => 4.45 * vw()
-const cardH = () => 6.35 * vw()
+const cardW = () => 4.45 * vw() * stageZoom()
+const cardH = () => 6.35 * vw() * stageZoom()
 
 function box(el: Element): Box {
   const r = el.getBoundingClientRect()
@@ -92,14 +93,19 @@ export async function translateTo(card: Card, container_source: CardContainer | 
   if (container_source instanceof Row && container_dest === ctx.me.hand) y *= 7 / 8
 
   // Build the ghost
+  // the ghost lives outside the (zoomed) stage: zoom it the same way, so its vw-sized content matches
+  const z = stageZoom()
+  x /= z
+  y /= z
   const host = document.createElement('div')
   host.className = 'card-flight'
   Object.assign(host.style, {
     position: 'fixed',
-    left: start.left + 'px',
-    top: start.top + 'px',
-    width: start.width + 'px',
-    height: start.height + 'px',
+    zoom: String(z),
+    left: start.left / z + 'px',
+    top: start.top / z + 'px',
+    width: start.width / z + 'px',
+    height: start.height / z + 'px',
     zIndex: '2',
     pointerEvents: 'none',
     transition: 'transform 0.5s',

@@ -1,5 +1,6 @@
 <template>
   <RouterView />
+  <SettingsMenu />
   <LanguageSwitcher />
   <CardInspector />
 </template>
@@ -8,6 +9,7 @@
 import { defineComponent, onBeforeUnmount, onMounted } from 'vue'
 import LanguageSwitcher from './ui/components/LanguageSwitcher.vue'
 import CardInspector from './ui/components/CardInspector.vue'
+import SettingsMenu from './ui/components/SettingsMenu.vue'
 import { inspector, inspectCard, closeInspector } from './ui/inspect'
 import { cardAtPoint } from './ui/dom'
 import { ui, type CarouselItem } from './ui/store'
@@ -29,7 +31,7 @@ function onContextMenu(e: MouseEvent) {
 
 export default defineComponent({
   name: 'App',
-  components: { LanguageSwitcher, CardInspector },
+  components: { LanguageSwitcher, CardInspector, SettingsMenu },
   setup() {
     onMounted(() => document.addEventListener('contextmenu', onContextMenu))
     onBeforeUnmount(() => document.removeEventListener('contextmenu', onContextMenu))

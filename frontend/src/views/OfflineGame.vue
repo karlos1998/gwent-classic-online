@@ -1,9 +1,8 @@
 <template>
-  <GameBoard @exit="game.exitGame()" />
-
-  <DeckCustomization />
-
-  <SettingsButtons />
+  <GameStage>
+    <GameBoard @exit="game.exitGame()" />
+    <DeckCustomization />
+  </GameStage>
 </template>
 
 <script lang="ts">
@@ -14,15 +13,14 @@ import { AudioManager } from '@/ui/audio'
 import { ensureEngine } from '@/ui/bootstrap'
 import GameBoard from '@/ui/components/GameBoard.vue'
 import DeckCustomization from '@/ui/components/DeckCustomization.vue'
-import SettingsButtons from '@/ui/components/SettingsButtons.vue'
+import GameStage from '@/ui/components/GameStage.vue'
 
 export default defineComponent({
   name: 'OfflineGame',
-  components: { GameBoard, DeckCustomization, SettingsButtons },
+  components: { GameStage, GameBoard, DeckCustomization },
   setup() {
     ensureEngine()
     onMounted(() => {
-      document.body.classList.add('gwent-board')
       initMusic()
       AudioManager.playSFX('menu_opening')
     })

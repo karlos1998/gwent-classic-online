@@ -58,10 +58,13 @@ export default defineComponent({
     const desc = computed(() => describe(card.value))
     const close = () => closeInspector()
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && inspector.card) closeInspector()
+      if (e.key === 'Escape' && inspector.card) {
+        closeInspector()
+        e.stopImmediatePropagation() // the board must not react to the same key
+      }
     }
-    onMounted(() => window.addEventListener('keydown', onKey))
-    onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
+    onMounted(() => window.addEventListener('keydown', onKey, true))
+    onBeforeUnmount(() => window.removeEventListener('keydown', onKey, true))
     return { card, image, title, meta, desc, close }
   },
 })
