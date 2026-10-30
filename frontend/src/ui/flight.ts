@@ -6,7 +6,7 @@
 import { h, render } from 'vue'
 import { ctx, Deck, HandAI, Row, sleep, type Card, type CardContainer } from '@/engine'
 import { cardElement, containerElement } from './dom'
-import { stageZoom } from './stage'
+import { overlayRoot, stageZoom, toLocalRect } from './stage'
 import CardView from './components/CardView.vue'
 
 interface Box {
@@ -21,8 +21,8 @@ const cardW = () => 4.45 * vw() * stageZoom()
 const cardH = () => 6.35 * vw() * stageZoom()
 
 function box(el: Element): Box {
-  const r = el.getBoundingClientRect()
-  return { left: r.left, top: r.top, width: r.width, height: r.height }
+  // in the app's own frame: the ghost is placed inside #app, which is turned on upright phones
+  return toLocalRect(el.getBoundingClientRect())
 }
 
 // Returns the source container's element to transition from
@@ -111,7 +111,7 @@ export async function translateTo(card: Card, container_source: CardContainer | 
     transition: 'transform 0.5s',
     transform: 'translate(0px, 0px)',
   } as CSSStyleDeclaration)
-  document.body.appendChild(host)
+  overlayRoot().appendChild(host)
   render(h(CardView, { card, ghost: true }), host)
 
   card.flying++

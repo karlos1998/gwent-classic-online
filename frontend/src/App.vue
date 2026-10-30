@@ -13,6 +13,7 @@ import SettingsMenu from './ui/components/SettingsMenu.vue'
 import { inspector, inspectCard, closeInspector } from './ui/inspect'
 import { cardAtPoint } from './ui/dom'
 import { ui, type CarouselItem } from './ui/store'
+import { installTouch } from './ui/touch'
 
 /** the board is covered by a menu / overlay, so the cards under the cursor are not visible */
 const boardCovered = () =>
@@ -33,8 +34,92 @@ export default defineComponent({
   name: 'App',
   components: { LanguageSwitcher, CardInspector, SettingsMenu },
   setup() {
-    onMounted(() => document.addEventListener('contextmenu', onContextMenu))
+    onMounted(() => {
+      installTouch()
+      document.addEventListener('contextmenu', onContextMenu)
+    })
     onBeforeUnmount(() => document.removeEventListener('contextmenu', onContextMenu))
   },
 })
 </script>
+
+<style>
+/* upright phone on a board screen: the whole app is drawn turned by 90° (see ui/stage.ts) */
+html.gwent-rotated #app {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--vp-h);
+  height: var(--vp-w);
+  overflow: hidden;
+  transform-origin: 0 0;
+  transform: translateX(var(--vp-w)) rotate(90deg);
+}
+
+/* overlays outside the stage are sized in vw: on the turned app vw has to mean the long side */
+html.gwent-rotated .match-found,
+html.gwent-rotated .toast-stack {
+  zoom: var(--rot-z);
+}
+
+/* touch screens: no text selection, magnifier, callouts or double-tap zoom while playing */
+html.touch body {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+html.touch input,
+html.touch textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* long press feedback: a gold ring fills under the finger */
+.touch-hold-ring {
+  position: fixed;
+  z-index: 5000;
+  width: 64px;
+  height: 64px;
+  margin: -32px 0 0 -32px;
+  pointer-events: none;
+  animation: thr-in 0.12s ease-out;
+}
+.touch-hold-ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+  overflow: visible;
+}
+.touch-hold-ring circle {
+  fill: rgba(0, 0, 0, 0.25);
+  stroke: goldenrod;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 107;
+  stroke-dashoffset: 107;
+  filter: drop-shadow(0 0 4px rgba(218, 165, 32, 0.8));
+  animation: thr-fill var(--hold) linear forwards;
+}
+.touch-hold-ring.done {
+  animation: thr-out 0.2s ease-out forwards;
+}
+@keyframes thr-fill {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes thr-in {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+@keyframes thr-out {
+  to {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+}
+</style>

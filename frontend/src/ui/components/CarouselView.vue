@@ -1,5 +1,5 @@
 <template>
-  <section id="carousel" :class="{ hide: !view.visible }">
+  <section id="carousel" ref="root" :class="{ hide: !view.visible }">
     <div
       :class="view.dir ? [view.dir] : []"
       :style="{ '--magnitude': view.magnitude, '--carousel-trans-time': view.transTime }"
@@ -22,11 +22,13 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, onBeforeUnmount, onMounted } from 'vue'
+import { computed, defineComponent, onBeforeUnmount, onMounted, ref } from 'vue'
 import type { Card } from '@/engine'
 import CardDescription from './CardDescription.vue'
 import { ui } from '../store'
 import { largeURL } from '../assets'
+import { onSwipe } from '../touch'
+import { toLocalPoint } from '../stage'
 
 export default defineComponent({
   name: 'CarouselView',
@@ -55,9 +57,18 @@ export default defineComponent({
       e.preventDefault()
       e.stopImmediatePropagation()
     }
-    onMounted(() => window.addEventListener('keydown', onKey, true))
-    onBeforeUnmount(() => window.removeEventListener('keydown', onKey, true))
-    return { curr, view, slots, large, onSlotClick }
+    // phones: swipe left / right browses the cards
+    const root = ref<HTMLElement | null>(null)
+    let unSwipe = () => {}
+    onMounted(() => {
+      window.addEventListener('keydown', onKey, true)
+      if (root.value) unSwipe = onSwipe(root.value, toLocalPoint, (dir) => view.visible && curr.value?.shift(dir))
+    })
+    onBeforeUnmount(() => {
+      window.removeEventListener('keydown', onKey, true)
+      unSwipe()
+    })
+    return { root, curr, view, slots, large, onSlotClick }
   },
 })
 </script>

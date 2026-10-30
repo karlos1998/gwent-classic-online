@@ -118,8 +118,16 @@ const en = {
     title: 'Settings',
     musicLabel: 'Music',
     sfxLabel: 'Sound effects',
+    fullscreenLabel: 'Full screen',
     notificationsLabel: 'Game messages',
     controls: 'Controls',
+  },
+  controlsTouch: {
+    hold: { key: 'Hold a card', action: 'Card details' },
+    tap: { key: 'Tap a card', action: 'Select it, then tap a row' },
+    swipe: { key: 'Swipe sideways', action: 'Browse cards in a choice' },
+    outside: { key: 'Tap the background', action: 'Skip the redraw / close a choice' },
+    rotate: { key: 'Turn the phone', action: 'The game is always laid out sideways' },
   },
   controls: {
     inspect: { key: 'Right click', action: 'Card details' },
@@ -151,6 +159,7 @@ const en = {
   },
   inspect: {
     close: 'Click or right-click anywhere (or press Esc) to close',
+    closeTouch: 'Tap anywhere to close',
     leader: 'Leader',
     weather: 'Weather card',
     special: 'Special card',

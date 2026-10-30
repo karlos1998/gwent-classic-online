@@ -14,7 +14,7 @@
             </div>
             <p>{{ desc.text }}</p>
           </div>
-          <p class="ci-hint">{{ $t('inspect.close') }}</p>
+          <p class="ci-hint">{{ $t(touch.coarse ? 'inspect.closeTouch' : 'inspect.close') }}</p>
         </div>
       </div>
     </div>
@@ -25,6 +25,7 @@
 import { computed, defineComponent, onBeforeUnmount, onMounted } from 'vue'
 import { describe } from '../store'
 import { inspector, closeInspector } from '../inspect'
+import { touch } from '../touch'
 import { largeURL } from '../assets'
 import { cardName, factionName, t } from '@/i18n'
 
@@ -65,7 +66,7 @@ export default defineComponent({
     }
     onMounted(() => window.addEventListener('keydown', onKey, true))
     onBeforeUnmount(() => window.removeEventListener('keydown', onKey, true))
-    return { card, image, title, meta, desc, close }
+    return { card, image, title, meta, desc, close, touch }
   },
 })
 </script>
@@ -148,6 +149,51 @@ export default defineComponent({
   margin: 0.4vw 0 0;
   font-size: 0.8vw;
   color: #6f6150;
+}
+/* phones: sized by the screen the player sees (--lw / --lh, see stage.ts), large enough to read */
+html.touch .ci-content {
+  gap: calc(var(--lw) * 3);
+  padding: 0 calc(var(--lw) * 3);
+}
+html.touch .ci-card {
+  width: calc(var(--lh) * 45);
+  height: calc(var(--lh) * 86);
+  max-width: none;
+  max-height: none;
+  flex: 0 0 auto;
+}
+html.touch .ci-side {
+  width: min(calc(var(--lw) * 50), 520px);
+  gap: calc(var(--lh) * 2);
+}
+html.touch .ci-name {
+  font-size: max(20px, calc(var(--lh) * 7));
+}
+html.touch .ci-meta {
+  font-size: max(13px, calc(var(--lh) * 4));
+}
+html.touch .ci-ability {
+  max-height: calc(var(--lh) * 55);
+  overflow-y: auto;
+  padding: calc(var(--lh) * 2.5) calc(var(--lh) * 3.5);
+  border-width: 1px 0;
+}
+html.touch .ci-ability-head {
+  gap: calc(var(--lh) * 2);
+  margin-bottom: calc(var(--lh) * 1.5);
+}
+html.touch .ci-icon {
+  width: max(22px, calc(var(--lh) * 7));
+  height: max(22px, calc(var(--lh) * 7));
+}
+html.touch .ci-ability h3 {
+  font-size: max(15px, calc(var(--lh) * 4.8));
+}
+html.touch .ci-ability p {
+  font-size: max(13px, calc(var(--lh) * 4.1));
+}
+html.touch .ci-hint {
+  font-size: max(11px, calc(var(--lh) * 3.3));
 }
 .inspector-enter-active,
 .inspector-leave-active {

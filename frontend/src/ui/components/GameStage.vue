@@ -9,13 +9,19 @@
 
 <script lang="ts">
 import { defineComponent, onBeforeUnmount, onMounted } from 'vue'
-import { stage } from '../stage'
+import { stage, setBoardScreen } from '../stage'
 
 export default defineComponent({
   name: 'GameStage',
   setup() {
-    onMounted(() => document.body.classList.add('gwent-board'))
-    onBeforeUnmount(() => document.body.classList.remove('gwent-board'))
+    onMounted(() => {
+      document.body.classList.add('gwent-board')
+      setBoardScreen(true)
+    })
+    onBeforeUnmount(() => {
+      document.body.classList.remove('gwent-board')
+      setBoardScreen(false)
+    })
     return { stage }
   },
 })

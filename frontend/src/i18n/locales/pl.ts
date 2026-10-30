@@ -120,8 +120,16 @@ const pl: Messages = {
     title: 'Ustawienia',
     musicLabel: 'Muzyka',
     sfxLabel: 'Efekty dźwiękowe',
+    fullscreenLabel: 'Pełny ekran',
     notificationsLabel: 'Komunikaty gry',
     controls: 'Sterowanie',
+  },
+  controlsTouch: {
+    hold: { key: 'Przytrzymaj kartę', action: 'Szczegóły karty' },
+    tap: { key: 'Dotknij karty', action: 'Wybierz kartę, potem dotknij rzędu' },
+    swipe: { key: 'Przesuń w bok', action: 'Przeglądaj karty w wyborze' },
+    outside: { key: 'Dotknij tła', action: 'Pomiń wymianę / zamknij wybór' },
+    rotate: { key: 'Obróć telefon', action: 'Gra zawsze układa się poziomo' },
   },
   controls: {
     inspect: { key: 'Prawy przycisk', action: 'Szczegóły karty' },
@@ -153,6 +161,7 @@ const pl: Messages = {
   },
   inspect: {
     close: 'Kliknij lub kliknij prawym przyciskiem w dowolnym miejscu (albo Esc), aby zamknąć',
+    closeTouch: 'Dotknij w dowolnym miejscu, aby zamknąć',
     leader: 'Dowódca',
     weather: 'Karta pogody',
     special: 'Karta specjalna',

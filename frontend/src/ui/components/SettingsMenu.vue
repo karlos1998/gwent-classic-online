@@ -37,11 +37,23 @@
           <i class="sm-switch" :class="{ on: Settings.notifications.enabled }"></i>
         </button>
 
+        <button
+          v-if="fullscreen.supported"
+          class="sm-row"
+          role="menuitemcheckbox"
+          :aria-checked="fullscreen.active"
+          @click="toggleFullscreen()"
+        >
+          <img :src="svg('fullscreen')" alt="" />
+          <span>{{ $t('settings.fullscreenLabel') }}</span>
+          <i class="sm-switch" :class="{ on: fullscreen.active }"></i>
+        </button>
+
         <h3>{{ $t('settings.controls') }}</h3>
         <dl class="sm-keys">
-          <template v-for="k in keys" :key="k">
-            <dt>{{ $t('controls.' + k + '.key') }}</dt>
-            <dd>{{ $t('controls.' + k + '.action') }}</dd>
+          <template v-for="k in touch.coarse ? touchKeys : keys" :key="k">
+            <dt>{{ $t((touch.coarse ? 'controlsTouch.' : 'controls.') + k + '.key') }}</dt>
+            <dd>{{ $t((touch.coarse ? 'controlsTouch.' : 'controls.') + k + '.action') }}</dd>
           </template>
         </dl>
       </div>
@@ -55,8 +67,11 @@ import { ui } from '../store'
 import { Settings } from '../settings'
 import { svgPath } from '../assets'
 import { hoverSFX, AudioManager } from '../audio'
+import { touch } from '../touch'
+import { fullscreen, toggleFullscreen } from '../fullscreen'
 
 const KEYS = ['inspect', 'pass', 'escape', 'carousel', 'factions']
+const TOUCH_KEYS = ['hold', 'tap', 'swipe', 'outside', 'rotate']
 
 export default defineComponent({
   name: 'SettingsMenu',
@@ -85,7 +100,7 @@ export default defineComponent({
       document.removeEventListener('mousedown', onDocClick)
       window.removeEventListener('keydown', onKey, true)
     })
-    return { open, root, toggle, ui, Settings, svg: svgPath, hoverSFX, keys: KEYS }
+    return { open, root, toggle, ui, Settings, svg: svgPath, hoverSFX, keys: KEYS, touchKeys: TOUCH_KEYS, touch, fullscreen, toggleFullscreen }
   },
 })
 </script>
