@@ -29,7 +29,8 @@ Repozytorium wymaga sekretów `SERVER_HOST`, `SERVER_USER`, `SERVER_SSH_KEY` i `
 (zweryfikowany klucz hosta SSH). Forki nie uruchamiają deploymentu na ten serwer.
 
 Na serwerze aplikacja jest w `/opt/apps/gwent-classic-online`, korzysta z zewnętrznej sieci
-`nginx-proxy` i automatycznego certyfikatu Let's Encrypt. Backend pozostaje w prywatnej sieci;
+`nginx-proxy`. Cloudflare obsługuje publiczny HTTPS i łączy się z proxy po HTTP (tryb Flexible).
+`HTTPS_METHOD=nohttps` wyłącza przekierowania HTTP → HTTPS na originie. Backend pozostaje w prywatnej sieci;
 nie trzeba konfigurować bazy ani tokenów aplikacji. DNS `gwent.letscode.it` musi wskazywać serwer.
 
 `TAG` przechowuje wdrożony commit. Przy błędzie kontroli zdrowia skrypt przywraca poprzednie obrazy.

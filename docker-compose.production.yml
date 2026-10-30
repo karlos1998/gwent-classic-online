@@ -20,7 +20,7 @@ services:
     environment:
       VIRTUAL_HOST: gwent.letscode.it
       VIRTUAL_PORT: '80'
-      LETSENCRYPT_HOST: gwent.letscode.it
+      HTTPS_METHOD: nohttps
     networks: [gwent, nginx-proxy]
     depends_on:
       server:
