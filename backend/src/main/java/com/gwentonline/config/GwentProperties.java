@@ -21,7 +21,8 @@ public record GwentProperties(
         @Valid @NotNull Matchmaking matchmaking,
         @Valid @NotNull Game game,
         @Valid @NotNull Cors cors,
-        @Valid @NotNull RateLimit rateLimit) {
+        @Valid @NotNull RateLimit rateLimit,
+        @Valid @NotNull Turnstile turnstile) {
 
     /**
      * @param maxSessions maximum number of guest sessions at the same time
@@ -47,7 +48,9 @@ public record GwentProperties(
             @NotNull Duration idleTimeout,
             @Positive int rateCapacity,
             @Positive double rateRefillPerSecond,
-            @Positive int maxRateViolations) {
+            @Positive int maxRateViolations,
+            @Positive int maxConnections,
+            @Positive int maxConnectionsPerIp) {
     }
 
     /**
@@ -70,6 +73,13 @@ public record GwentProperties(
     }
 
     public record Cors(@NotEmpty List<String> allowedOrigins) {
+    }
+
+    /** Server-side challenge configuration; never expose the secret through diagnostics. */
+    public record Turnstile(boolean testMode, @NotBlank String siteKey, @NotBlank String secretKey,
+                            @NotEmpty List<String> hostnames) {
+        @Override
+        public String toString() { return "Turnstile[secretKey=REDACTED]"; }
     }
 
     /** @param sessionsPerMinute guest session creations per client IP and minute */

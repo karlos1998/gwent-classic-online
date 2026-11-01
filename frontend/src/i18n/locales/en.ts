@@ -23,6 +23,7 @@ const en = {
       'by Arun Sundaram. Gwent and The Witcher are trademarks of CD PROJEKT S.A. Fan project, not for sale.',
   },
   online: {
+    challengeRetry: 'Retry verification',
     kicker: 'Online',
     title: 'Play Online',
     back: 'Back',
@@ -230,6 +231,7 @@ const en = {
   },
   // server error codes (errors.<code>), see the backend's GwentException / ProblemDetail codes
   errors: {
+    captcha: { required: 'Complete the bot verification.', failed: 'Verification expired or was rejected. Please try again.', unavailable: 'Bot verification is unavailable. Please try again shortly.' },
     unknown: 'Something went wrong.',
     rateLimited: 'Too many requests - slow down a little.',
     nickname: {

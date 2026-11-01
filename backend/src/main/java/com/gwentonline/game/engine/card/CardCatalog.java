@@ -1,7 +1,7 @@
 package com.gwentonline.game.engine.card;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,7 +37,7 @@ public final class CardCatalog {
 
     public static CardCatalog loadDefault() {
         try (InputStream in = Objects.requireNonNull(CardCatalog.class.getResourceAsStream(RESOURCE), RESOURCE)) {
-            List<CardDefinition> defs = new ObjectMapper().readValue(in, new TypeReference<>() {});
+            List<CardDefinition> defs = JsonMapper.builder().build().readValue(in, new TypeReference<>() {});
             return new CardCatalog(defs);
         } catch (IOException e) {
             throw new UncheckedIOException("Cannot load card catalog " + RESOURCE, e);

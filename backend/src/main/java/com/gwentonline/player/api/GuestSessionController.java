@@ -1,12 +1,12 @@
 package com.gwentonline.player.api;
 
-import com.gwentonline.common.ClientRateLimiter;
 import com.gwentonline.player.GuestSession;
+import com.gwentonline.security.TurnstileVerifier;
+import java.util.Map;
 import com.gwentonline.player.NicknamePolicy;
 import com.gwentonline.player.SessionRegistry;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
@@ -32,14 +32,19 @@ public class GuestSessionController {
 
     public static final String TOKEN_HEADER = "X-Session-Token";
 
+    private final TurnstileVerifier turnstile;
     private final SessionRegistry sessions;
-    private final ClientRateLimiter rateLimiter;
+
+    @GetMapping("/challenge")
+    public Map<String, String> challenge() {
+        return Map.of("siteKey", turnstile.siteKey());
+    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create a guest session for a unique nickname")
-    public SessionResponse create(@Valid @RequestBody CreateSessionRequest request, HttpServletRequest http) {
-        rateLimiter.check(http.getRemoteAddr());
+    public SessionResponse create(@Valid @RequestBody CreateSessionRequest request) {
+        turnstile.verify(request.turnstileToken());
         GuestSession session = sessions.create(request.nickname());
         return new SessionResponse(session.token(), session.profile(), sessions.idleTtl().toSeconds());
     }

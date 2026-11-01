@@ -1,12 +1,12 @@
 package com.gwentonline.transport;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.databind.json.JsonMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.MapperFeature;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectWriter;
+import tools.jackson.databind.json.JsonMapper;
 import com.gwentonline.protocol.ClientMessage;
 import org.springframework.stereotype.Component;
 
@@ -23,11 +23,14 @@ public class ProtocolCodec {
             .enable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
             .enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS)
             .disable(MapperFeature.ALLOW_COERCION_OF_SCALARS)
-            .serializationInclusion(JsonInclude.Include.NON_NULL)
+            .changeDefaultPropertyInclusion(inclusion -> inclusion.withValueInclusion(JsonInclude.Include.NON_NULL))
             .build();
 
-    public ClientMessage read(String json) throws JsonProcessingException {
-        return mapper.readValue(json, ClientMessage.class);
+    public ClientMessage read(String json) throws JacksonException {
+        ClientMessage message = mapper.readValue(json, ClientMessage.class);
+        if (message == null) throw tools.jackson.databind.exc.MismatchedInputException.from(
+                (tools.jackson.core.JsonParser) null, ClientMessage.class, "Message cannot be null");
+        return message;
     }
 
     public ObjectWriter writer() {

@@ -39,7 +39,7 @@ public class SessionRegistry {
     }
 
     /** Registers a guest; throws {@link NicknameTakenException}, {@link InvalidNicknameException}, {@link ServerFullException}. */
-    public GuestSession create(String rawNickname) {
+    public synchronized GuestSession create(String rawNickname) {
         NicknamePolicy.check(rawNickname).ifPresent(code -> {
             throw new InvalidNicknameException(code);
         });

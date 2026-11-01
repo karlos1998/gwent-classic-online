@@ -5,7 +5,7 @@ Gwint z Wiedźmina 3 w przeglądarce — gra z botem (offline) i gra online z pr
 ```
 gwent-classic-online/
 ├── frontend/           Vue 3 + TypeScript + Vite (tryb offline 1:1 z oryginałem + klient trybu online)
-├── backend/            Java 21 + Spring Boot 3.5 + Gradle (serwer trybu online, bez bazy danych)
+├── backend/            Java 21 + Spring Boot 4.1 + Gradle (serwer trybu online, bez bazy danych)
 ├── docker-compose.yml  cały stos jednym poleceniem
 └── .env.example        konfiguracja (czas ruchu, limity, origin, przyszłe logowanie Google)
 ```
@@ -29,9 +29,12 @@ Repozytorium wymaga sekretów `SERVER_HOST`, `SERVER_USER`, `SERVER_SSH_KEY` i `
 (zweryfikowany klucz hosta SSH). Forki nie uruchamiają deploymentu na ten serwer.
 
 Na serwerze aplikacja jest w `/opt/apps/gwent-classic-online`, korzysta z zewnętrznej sieci
-`nginx-proxy`. Cloudflare obsługuje publiczny HTTPS i łączy się z proxy po HTTP (tryb Flexible).
-`HTTPS_METHOD=nohttps` wyłącza przekierowania HTTP → HTTPS na originie. Backend pozostaje w prywatnej sieci;
-nie trzeba konfigurować bazy ani tokenów aplikacji. DNS `gwent.letscode.it` musi wskazywać serwer.
+`nginx-proxy`. Cloudflare używa Full (strict) regułą ograniczoną do `gwent.letscode.it`, a origin ma
+certyfikat Let's Encrypt odnawiany przez istniejący acme-companion. `HTTPS_METHOD=noredirect` włącza
+HTTP i HTTPS bez pętli przekierowań; przekierowanie HTTP → HTTPS wykonuje Cloudflare.
+Osobna konfiguracja vhostu wpuszcza tylko zakresy Cloudflare i normalizuje nagłówki IP klienta.
+Backend pozostaje w prywatnej sieci. Klucze Turnstile są w `.env` na serwerze; szczegóły i stan wdrożenia
+opisuje [SECURITY.md](SECURITY.md). DNS `gwent.letscode.it` wskazuje serwer z włączonym proxy Cloudflare.
 
 `TAG` przechowuje wdrożony commit. Przy błędzie kontroli zdrowia skrypt przywraca poprzednie obrazy.
 Ręczny rollback: w katalogu aplikacji ustaw `TAG=<poprzedni commit>` i uruchom
@@ -44,7 +47,7 @@ Backend (JDK 21; Gradle pobierze się sam przez wrapper):
 
 ```bash
 cd backend
-./gradlew bootRun     # http://localhost:47321, dokumentacja API: /swagger-ui.html, zdrowie: /actuator/health
+./gradlew bootRun     # http://localhost:47321, dokumentacja API: /swagger-ui.html po GWENT_API_DOCS_ENABLED=true, zdrowie: /actuator/health
 ./gradlew test
 ```
 
@@ -159,7 +162,7 @@ wybór rzędu → walka wręcz). Przycisk wyjścia = poddanie się. Zerwane poł
 
 ### Backend
 
-Java 21, Spring Boot 3.5, Gradle (Kotlin DSL), Lombok, Bean Validation, Caffeine, Actuator + Micrometer,
+Java 21, Spring Boot 4.1, Gradle (Kotlin DSL), Lombok, Bean Validation, Caffeine, Actuator + Micrometer,
 springdoc-openapi. Bez bazy danych — wszystko żyje w pamięci przez czas sesji.
 
 ```
@@ -173,12 +176,15 @@ com.gwentonline
 ├── config, common   właściwości gwent.* (walidowane), CORS, rate limiting, ProblemDetail z kodem błędu
 ```
 
-Komunikacja: `POST /api/v1/sessions {nickname}` zwraca token sesji gościa, cała reszta idzie przez WebSocket `/ws`
+Komunikacja: `POST /api/v1/sessions {nickname, turnstileToken}` zwraca token sesji gościa, cała reszta idzie przez WebSocket `/ws`
 (pierwsza wiadomość `auth`). Klient wysyła tylko intencje (`playCard`, `pass`, `activateLeader`, `chooseCard`, …) z id
 promptu; serwer liczy całą grę i wysyła każdemu graczowi **jego własną** migawkę stanu, efekty (powiadomienia, dźwięki,
 animacje) i prompty z terminem. Kody błędów (`errors.<kod>`) są tłumaczone po stronie klienta.
 
 ### Bezpieczeństwo
+
+Turnstile, limity API/WS i konfiguracja Cloudflare przed publikacją: **[SECURITY.md](SECURITY.md)**.
+Lokalnie działają oficjalne testowe klucze „always pass”; produkcja wymaga prawdziwych kluczy na serwerze.
 
 - **Serwer jest autorytatywny.** Klient niczego nie liczy; każdy ruch jest walidowany (karta w ręce, legalny rząd,
   cel wabika, dostępność dowódcy, aktualny prompt). Nieprawidłowe ruchy są odrzucane, zegar tury dalej biegnie.

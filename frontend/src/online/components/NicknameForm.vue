@@ -27,7 +27,9 @@
         {{ message }}
       </p>
 
-      <button class="nick-submit" type="submit" :disabled="!!error || online.signingIn" @mouseenter="hoverSFX">
+      <TurnstileChallenge ref="challenge" v-model="challengeToken" />
+
+      <button class="nick-submit" type="submit" :disabled="!!error || online.signingIn || !challengeToken" @mouseenter="hoverSFX">
         {{ $t(online.signingIn ? 'online.nickname.joining' : 'online.nickname.submit') }}
       </button>
 
@@ -43,11 +45,15 @@ import { checkNickname, NICKNAME_MAX } from '../nickname'
 import { online } from '../session'
 import { hoverSFX } from '@/ui/audio'
 import { t } from '@/i18n'
+import TurnstileChallenge from './TurnstileChallenge.vue'
 
 export default defineComponent({
   name: 'NicknameForm',
+  components: { TurnstileChallenge },
   setup() {
     const value = ref('')
+    const challengeToken = ref('')
+    const challenge = ref<InstanceType<typeof TurnstileChallenge> | null>(null)
     const touched = ref(false)
     const input = ref<HTMLInputElement | null>(null)
     const error = computed(() => checkNickname(value.value))
@@ -64,16 +70,17 @@ export default defineComponent({
       return t('online.nickname.rules')
     })
 
-    const submit = () => {
+    const submit = async () => {
       touched.value = true
-      if (error.value) return
+      if (error.value || !challengeToken.value || online.signingIn) return
       // the server validates again and checks that the nickname is free
-      online.signIn(value.value.normalize('NFKC'))
+      await online.signIn(value.value.normalize('NFKC'), challengeToken.value)
+      challenge.value?.reset()
     }
 
     onMounted(() => input.value?.focus())
 
-    return { value, touched, input, error, length, showError, serverError, message, submit, online, hoverSFX, NICKNAME_MAX }
+    return { challenge, challengeToken, value, touched, input, error, length, showError, serverError, message, submit, online, hoverSFX, NICKNAME_MAX }
   },
 })
 </script>

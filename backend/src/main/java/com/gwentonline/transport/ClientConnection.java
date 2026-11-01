@@ -1,7 +1,7 @@
 package com.gwentonline.transport;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectWriter;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectWriter;
 import com.gwentonline.common.TokenBucket;
 import com.gwentonline.player.GuestSession;
 import com.gwentonline.protocol.ServerMessage;
@@ -76,7 +76,7 @@ public final class ClientConnection {
         if (!session.isOpen()) return;
         try {
             session.sendMessage(new TextMessage(writer.writeValueAsString(message)));
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             log.error("Cannot serialize {}", message.getClass().getSimpleName(), e);
         } catch (IOException | RuntimeException e) {
             // includes SessionLimitExceededException of the decorator (slow consumer)

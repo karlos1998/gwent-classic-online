@@ -26,7 +26,11 @@ public class ClientRateLimiter {
 
     /** @throws TooManyRequestsException if the client exceeded its budget */
     public void check(String clientKey) {
-        TokenBucket bucket = buckets.get(clientKey, key -> new TokenBucket(perMinute, perMinute / 60.0, clock));
+        check("session:" + clientKey, perMinute);
+    }
+
+    public void check(String clientKey, int limitPerMinute) {
+        TokenBucket bucket = buckets.get(clientKey, key -> new TokenBucket(limitPerMinute, limitPerMinute / 60.0, clock));
         if (!bucket.tryConsume()) throw new TooManyRequestsException();
     }
 

@@ -15,6 +15,11 @@ import org.springframework.web.method.annotation.HandlerMethodValidationExceptio
 @RestControllerAdvice
 public class ApiExceptionHandler {
 
+    @ExceptionHandler(com.gwentonline.security.TurnstileVerifier.ChallengeException.class)
+    ProblemDetail challenge(com.gwentonline.security.TurnstileVerifier.ChallengeException e) {
+        return problem(e.unavailable() ? HttpStatus.SERVICE_UNAVAILABLE : HttpStatus.FORBIDDEN, e.code());
+    }
+
     @ExceptionHandler(NicknameTakenException.class)
     ProblemDetail nicknameTaken(NicknameTakenException e) {
         return problem(HttpStatus.CONFLICT, e.code());

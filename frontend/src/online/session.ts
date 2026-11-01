@@ -82,12 +82,12 @@ class OnlineSession {
     this.connect()
   }
 
-  async signIn(nickname: string) {
+  async signIn(nickname: string, turnstileToken: string) {
     if (this.signingIn) return
     this.signingIn = true
     this.signInError = null
     try {
-      const session = await api.createSession(nickname)
+      const session = await api.createSession(nickname, turnstileToken)
       this.token = session.token
       this.profile = session.profile
       writeStored({ token: session.token, profile: session.profile })

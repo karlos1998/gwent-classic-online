@@ -1,7 +1,8 @@
 package com.gwentonline.transport;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import tools.jackson.core.JacksonException;
 import com.gwentonline.common.TokenBucket;
+import com.gwentonline.common.ClientRateLimiter;
 import com.gwentonline.config.GwentProperties;
 import com.gwentonline.player.SessionRegistry;
 import com.gwentonline.protocol.ClientMessage;
@@ -31,6 +32,9 @@ import java.util.concurrent.ConcurrentHashMap;
 public class GameWebSocketHandler extends TextWebSocketHandler {
 
     private final Map<String, ClientConnection> connections = new ConcurrentHashMap<>();
+    private final Map<String, String> addresses = new java.util.HashMap<>();
+    private final Map<String, Integer> perIp = new java.util.HashMap<>();
+    private final ClientRateLimiter ipRateLimiter;
     private final ProtocolCodec codec;
     private final MessageDispatcher dispatcher;
     private final SessionRegistry sessions;
@@ -38,7 +42,9 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
     private final Clock clock;
 
     public GameWebSocketHandler(ProtocolCodec codec, MessageDispatcher dispatcher,
-                                SessionRegistry sessions, GwentProperties properties, Clock clock, MeterRegistry meters) {
+                                SessionRegistry sessions, GwentProperties properties, Clock clock, MeterRegistry meters,
+                                ClientRateLimiter ipRateLimiter) {
+        this.ipRateLimiter = ipRateLimiter;
         this.codec = codec;
         this.dispatcher = dispatcher;
         this.sessions = sessions;
@@ -48,7 +54,14 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
     }
 
     @Override
-    public void afterConnectionEstablished(WebSocketSession session) {
+    public synchronized void afterConnectionEstablished(WebSocketSession session) throws java.io.IOException {
+        String ip = session.getRemoteAddress() == null ? "unknown" : session.getRemoteAddress().getAddress().getHostAddress();
+        if (connections.size() >= settings.maxConnections() || perIp.getOrDefault(ip, 0) >= settings.maxConnectionsPerIp()) {
+            session.close(CloseStatus.POLICY_VIOLATION);
+            return;
+        }
+        addresses.put(session.getId(), ip);
+        perIp.merge(ip, 1, Integer::sum);
         WebSocketSession safe = new ConcurrentWebSocketSessionDecorator(session,
                 (int) settings.sendTimeLimit().toMillis(), settings.sendBufferBytes(),
                 ConcurrentWebSocketSessionDecorator.OverflowStrategy.TERMINATE);
@@ -73,11 +86,20 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
             }
             return;
         }
+        try {
+            ipRateLimiter.check("ws-message:" + clientIp(session), 2400);
+        } catch (ClientRateLimiter.TooManyRequestsException e) {
+            connection.close(ClientConnection.RATE_LIMITED);
+            return;
+        }
         ClientMessage parsed;
         try {
             parsed = codec.read(message.getPayload());
-        } catch (JsonProcessingException e) {
-            connection.registerViolation();
+        } catch (JacksonException e) {
+            if (connection.registerViolation() >= settings.maxRateViolations()) {
+                connection.close(CloseStatus.BAD_DATA);
+                return;
+            }
             connection.send(new ServerMessage.ErrorMessage("protocol.invalidMessage"));
             return;
         }
@@ -91,10 +113,20 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
+        releaseAddress(session.getId());
         ClientConnection connection = connections.remove(session.getId());
         if (connection != null && connection.isAuthenticated()) {
             sessions.detach(connection.player(), connection);
         }
+    }
+
+    private synchronized String clientIp(WebSocketSession session) {
+        return addresses.getOrDefault(session.getId(), "unknown");
+    }
+
+    private synchronized void releaseAddress(String id) {
+        String ip = addresses.remove(id);
+        if (ip != null) perIp.computeIfPresent(ip, (key, count) -> count <= 1 ? null : count - 1);
     }
 
     /** Connections must authenticate shortly after opening; idle anonymous sockets are dropped. */

@@ -16,7 +16,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")
-                .allowedOriginPatterns(properties.cors().allowedOrigins().toArray(String[]::new))
+                .allowedOrigins(properties.cors().allowedOrigins().toArray(String[]::new))
                 .allowedMethods("GET", "POST", "DELETE")
                 .allowedHeaders("Content-Type", GuestSessionController.TOKEN_HEADER)
                 .maxAge(3600);

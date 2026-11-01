@@ -15,6 +15,9 @@ server:
   port: ${GWENT_SERVER_PORT:47321}
   shutdown: graceful
   forward-headers-strategy: native   # trust X-Forwarded-* from the reverse proxy (nginx) for client IPs
+  tomcat:
+    max-http-form-post-size: 16KB
+    max-swallow-size: 16KB
   error:
     include-stacktrace: never
     include-message: never
@@ -23,7 +26,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        include: health
   endpoint:
     health:
       probes:
@@ -34,8 +37,10 @@ management:
 
 springdoc:
   api-docs:
+    enabled: ${GWENT_API_DOCS_ENABLED:false}
     path: /api/docs
   swagger-ui:
+    enabled: ${GWENT_API_DOCS_ENABLED:false}
     path: /swagger-ui.html
 
 logging:
@@ -56,6 +61,8 @@ gwent:
     rate-capacity: 30
     rate-refill-per-second: 10
     max-rate-violations: 30
+    max-connections: 2000
+    max-connections-per-ip: 12
   matchmaking:
     confirm-timeout: 20s
     decline-cooldown: 2m
@@ -66,6 +73,11 @@ gwent:
     max-concurrent-games: 1000
   cors:
     allowed-origins: ${GWENT_ALLOWED_ORIGINS:http://localhost:47317,http://127.0.0.1:47317,http://localhost:47320,http://127.0.0.1:47320}
+  turnstile:
+    test-mode: ${GWENT_TURNSTILE_TEST_MODE:true}
+    site-key: ${GWENT_TURNSTILE_SITE_KEY:1x00000000000000000000AA}
+    secret-key: ${GWENT_TURNSTILE_SECRET_KEY:1x0000000000000000000000000000000AA}
+    hostnames: ${GWENT_TURNSTILE_HOSTNAMES:localhost,127.0.0.1}
   rate-limit:
     sessions-per-minute: 10
 

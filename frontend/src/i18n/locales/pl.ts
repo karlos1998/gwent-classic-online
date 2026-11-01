@@ -25,6 +25,7 @@ const pl: Messages = {
       'autorstwa Aruna Sundarama. Gwint i Wiedźmin są znakami towarowymi CD PROJEKT S.A. Projekt fanowski, nie na sprzedaż.',
   },
   online: {
+    challengeRetry: 'Ponów weryfikację',
     kicker: 'Online',
     title: 'Graj online',
     back: 'Wróć',
@@ -232,6 +233,7 @@ const pl: Messages = {
   },
   // kody błędów serwera (errors.<kod>)
   errors: {
+    captcha: { required: 'Potwierdź weryfikację antybotową.', failed: 'Weryfikacja wygasła lub została odrzucona. Spróbuj ponownie.', unavailable: 'Weryfikacja antybotowa jest niedostępna. Spróbuj ponownie za chwilę.' },
     unknown: 'Coś poszło nie tak.',
     rateLimited: 'Za dużo żądań - zwolnij trochę.',
     nickname: {

@@ -22,6 +22,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   let response: Response
   try {
     response = await fetch(BASE + path, {
+      signal: AbortSignal.timeout(10000),
       ...init,
       headers: { Accept: 'application/json', ...(init.body ? { 'Content-Type': 'application/json' } : {}), ...init.headers },
     })
@@ -42,8 +43,12 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 }
 
 export const api = {
-  createSession(nickname: string) {
-    return request<SessionResponse>('/api/v1/sessions', { method: 'POST', body: JSON.stringify({ nickname }) })
+  challenge() {
+    return request<{ siteKey: string }>('/api/v1/sessions/challenge')
+  },
+
+  createSession(nickname: string, turnstileToken: string) {
+    return request<SessionResponse>('/api/v1/sessions', { method: 'POST', body: JSON.stringify({ nickname, turnstileToken }) })
   },
 
   availability(nickname: string) {
