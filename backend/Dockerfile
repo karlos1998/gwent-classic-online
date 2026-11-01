@@ -8,7 +8,7 @@ COPY src ./src
 RUN gradle --no-daemon -q bootJar -x test
 
 # ---- runtime ----
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:24-jre-alpine
 RUN addgroup -S gwent && adduser -S -G gwent gwent
 WORKDIR /app
 COPY --from=build /src/build/libs/gwent-online-server.jar app.jar
