@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 # ---- build ----
-FROM gradle:8.14.3-jdk21 AS build
+FROM gradle:9.8.1-jdk21 AS build
 WORKDIR /src
 COPY settings.gradle.kts build.gradle.kts lombok.config ./
 RUN gradle --no-daemon -q dependencies > /dev/null || true
