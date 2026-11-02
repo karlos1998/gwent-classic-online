@@ -1,8 +1,12 @@
 <template>
-  <RouterView />
-  <SettingsMenu />
-  <LanguageSwitcher />
-  <CardInspector />
+  <div id="music-host" v-once><div id="youtube"></div></div>
+  <AssetLoading v-if="!assetLoading.ready" />
+  <template v-else>
+    <RouterView />
+    <SettingsMenu />
+    <LanguageSwitcher />
+    <CardInspector />
+  </template>
 </template>
 
 <script lang="ts">
@@ -14,6 +18,9 @@ import { inspector, inspectCard, closeInspector } from './ui/inspect'
 import { cardAtPoint } from './ui/dom'
 import { ui, type CarouselItem } from './ui/store'
 import { installTouch } from './ui/touch'
+import AssetLoading from './ui/components/AssetLoading.vue'
+import { assetLoading, preloadAssets } from './ui/preload'
+import { music } from './ui/music'
 
 /** the board is covered by a menu / overlay, so the cards under the cursor are not visible */
 const boardCovered = () =>
@@ -32,13 +39,16 @@ function onContextMenu(e: MouseEvent) {
 
 export default defineComponent({
   name: 'App',
-  components: { LanguageSwitcher, CardInspector, SettingsMenu },
+  components: { AssetLoading, LanguageSwitcher, CardInspector, SettingsMenu },
   setup() {
     onMounted(() => {
+      void preloadAssets()
+      music.init()
       installTouch()
       document.addEventListener('contextmenu', onContextMenu)
     })
     onBeforeUnmount(() => document.removeEventListener('contextmenu', onContextMenu))
+    return { assetLoading }
   },
 })
 </script>

@@ -23,6 +23,11 @@ jobs:
       - name: Check frontend
         working-directory: frontend
         run: npm ci && npm run typecheck
+      - name: Check client loading and music
+        working-directory: frontend
+        run: |
+          npx playwright install --with-deps chromium
+          npm run test:client
       - uses: actions/setup-java@v4
         with:
           distribution: temurin

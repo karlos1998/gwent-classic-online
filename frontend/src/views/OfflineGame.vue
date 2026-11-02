@@ -8,7 +8,6 @@
 <script lang="ts">
 import { defineComponent, onMounted } from 'vue'
 import { ctx } from '@/engine'
-import { initMusic } from '@/ui/store'
 import { AudioManager } from '@/ui/audio'
 import { ensureEngine } from '@/ui/bootstrap'
 import GameBoard from '@/ui/components/GameBoard.vue'
@@ -21,7 +20,6 @@ export default defineComponent({
   setup() {
     ensureEngine()
     onMounted(() => {
-      initMusic()
       AudioManager.playSFX('menu_opening')
     })
     return { game: ctx.game }

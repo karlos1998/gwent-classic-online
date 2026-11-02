@@ -1,7 +1,6 @@
 <template>
   <!-- Markup mirrors the original index.html 1:1 so the original stylesheet applies unchanged.
        Shared by the offline game (local engine) and the online game (server snapshots). -->
-  <div id="youtube"></div>
 
   <main :class="{ noclick: ui.mainNoclick }">
     <section

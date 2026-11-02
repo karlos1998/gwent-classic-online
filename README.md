@@ -58,6 +58,7 @@ cd frontend
 npm install
 npm run dev        # http://localhost:47317
 npm run build      # produkcyjny build do frontend/dist
+npm run test:client # regresje ładowania zasobów i muzyki (lokalnie używa Chrome)
 npm run typecheck  # sprawdzenie typów (vue-tsc), opcjonalnie
 ```
 
@@ -216,3 +217,22 @@ Wszystkie wartości są w `backend/src/main/resources/application.yml` (`gwent.*
   wyłączone, więc nikt stawiający własny serwer nie musi niczego konfigurować. Protokół i widoki mają już miejsce na
   `ACCOUNT` (awatar, liczba gier).
 - Zaproszenie znajomego linkiem i wyzwanie po pseudonimie.
+
+### Ładowanie zasobów i muzyka
+
+Przed pokazaniem menu klient przygotowuje wszystkie pliki z `public/img`, `public/svg` i `public/sfx`.
+Lista powstaje automatycznie podczas budowania, więc obejmuje także nowe karty i efekty.
+Pasek pokazuje liczbę poprawnie przygotowanych plików. Pobieranie działa w maksymalnie ośmiu
+zadaniach równolegle; nieudane pliki można ponowić bez powtarzania udanych pobrań.
+Obrazy są też dekodowane przed wejściem do gry. Dalszym przechowywaniem pobranych plików
+między wizytami zarządza pamięć podręczna przeglądarki.
+
+Odtwarzacz muzyki pozostaje zamontowany przy zmianach ekranów. Przełącznik pokazuje zapisaną
+preferencję użytkownika, niezależnie od blokady autoodtwarzania. Po pierwszym kliknięciu lub
+naciśnięciu klawisza klient ponawia odtwarzanie, jeśli muzyka jest włączona. Zapisane ręczne
+wyłączenie jest respektowane także po odświeżeniu. Muzyka nadal korzysta z YouTube i wymaga
+dostępu do tej usługi; jej błąd nie blokuje ładowania gry, a ustawienia pozwalają ponowić próbę.
+
+Testy przeglądarkowe używają zdarzeń imitujących API YouTube: sprawdzają blokadę autoodtwarzania,
+zachowanie preferencji i odtwarzacza między ekranami oraz zatrzymanie ładowania przy błędzie
+pliku i ponawianie tylko brakujących zasobów. CI uruchamia je w Chromium przed wdrożeniem.

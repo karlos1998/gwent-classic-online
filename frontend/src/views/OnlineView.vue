@@ -54,7 +54,7 @@
 <script lang="ts">
 import { defineComponent, onBeforeUnmount, onMounted } from 'vue'
 import { online } from '@/online/session'
-import { ui, initMusic } from '@/ui/store'
+import { ui } from '@/ui/store'
 import { AudioManager } from '@/ui/audio'
 import { ensureEngine } from '@/ui/bootstrap'
 import GameBoard from '@/ui/components/GameBoard.vue'
@@ -102,7 +102,6 @@ export default defineComponent({
     }
 
     onMounted(() => {
-      initMusic()
       online.resume()
       // automated UI tests: /online?debug exposes the session next to window.__gwent
       if (/[?&]debug\b/.test(location.search)) (window as unknown as Record<string, unknown>).__gwentOnline = online

@@ -102,7 +102,7 @@ html {
 	position: fixed;
 	height: 10px;
 	width: 10px;
-	display: hidden;
+	pointer-events: none;
 	z-index: -100;
 }
 

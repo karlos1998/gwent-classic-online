@@ -19,6 +19,7 @@ import type { Fadeable } from '@/engine/util'
 import { ability_dict } from '@/engine/abilities'
 import { AudioManager } from './audio'
 import { Settings } from './settings'
+import { music } from './music'
 import { translateTo } from './flight'
 import { iconURL } from './assets'
 import { t, te, factionName, factionDescription } from '@/i18n'
@@ -275,10 +276,6 @@ export class UIStore implements UIPort {
   customizationVisible = true
   /** settings buttons positioned for the deck menu */
   deckMenu = true
-
-  // music (YouTube)
-  musicReady = false
-  musicPlaying = false
 
   /** set by the online game, see RemoteActions */
   remote: RemoteActions | null = null
@@ -666,69 +663,9 @@ export class UIStore implements UIPort {
 
   // Called when client toggles the music
   toggleMusic() {
-    const isPlaying = music.isPlaying()
-    if (isPlaying) music.pause()
-    else music.play()
-    this.musicPlaying = !isPlaying
-    Settings.music.setEnabled(!isPlaying)
+    Settings.music.toggle()
+    music.sync()
   }
-}
-
-// ---------------- background music (YouTube, same track as the original) ----------------
-interface YTPlayer {
-  playVideo(): void
-  pauseVideo(): void
-  getPlayerState(): number
-}
-declare global {
-  interface Window {
-    YT?: { Player: new (id: string, opts: unknown) => YTPlayer; PlayerState: { PLAYING: number } }
-    onYouTubeIframeAPIReady?: () => void
-  }
-}
-
-const music = {
-  player: null as YTPlayer | null,
-  active: undefined as boolean | undefined,
-  isPlaying() {
-    return !!this.player && !!window.YT && this.player.getPlayerState() === window.YT.PlayerState.PLAYING
-  },
-  play() {
-    this.player?.playVideo()
-  },
-  pause() {
-    this.player?.pauseVideo()
-  },
-  init() {
-    if (typeof window === 'undefined' || document.getElementById('yt-api')) return
-    window.onYouTubeIframeAPIReady = () => {
-      music.player = new window.YT!.Player('youtube', {
-        videoId: 'UE9fPWy1_o4',
-        playerVars: { autoplay: 1, controls: 0, loop: 1, playlist: 'UE9fPWy1_o4', rel: 0, version: 3, modestbranding: 1 },
-        events: { onStateChange: initButton },
-      })
-    }
-    const s = document.createElement('script')
-    s.id = 'yt-api'
-    s.src = 'https://www.youtube.com/iframe_api'
-    document.head.appendChild(s)
-
-    function initButton() {
-      if (music.active !== undefined) return
-      music.active = true
-      music.play()
-      const timer = setInterval(() => {
-        if (!music.isPlaying()) music.play()
-        else {
-          clearInterval(timer)
-          ui.musicReady = true
-          ui.musicPlaying = true
-          if (!Settings.music.isEnabled()) setTimeout(() => ui.toggleMusic(), 10)
-        }
-      }, 500)
-    }
-  },
 }
 
 export const ui = new UIStore()
-export const initMusic = () => music.init()

@@ -16,10 +16,13 @@
     <Transition name="sm">
       <div v-if="open" class="sm-panel" role="menu">
         <h3>{{ $t('settings.title') }}</h3>
-        <button class="sm-row" role="menuitemcheckbox" :aria-checked="ui.musicPlaying" @click="ui.toggleMusic()">
+        <button class="sm-row" role="menuitemcheckbox" :aria-checked="Settings.music.enabled" @click="ui.toggleMusic()">
           <img :src="svg('music')" alt="" />
           <span>{{ $t('settings.musicLabel') }}</span>
-          <i class="sm-switch" :class="{ on: ui.musicPlaying }"></i>
+          <i class="sm-switch" :class="{ on: Settings.music.enabled }"></i>
+        </button>
+        <button v-if="Settings.music.enabled && musicState.status !== 'playing'" class="sm-music-status" @click="music.retry()">
+          {{ $t('settings.musicStatus.' + musicState.status) }}
         </button>
         <button class="sm-row" role="menuitemcheckbox" :aria-checked="Settings.soundEffects.enabled" @click="ui.toggleSFX()">
           <img :src="svg('sfx')" alt="" />
@@ -64,6 +67,7 @@
 <script lang="ts">
 import { defineComponent, onBeforeUnmount, onMounted, ref } from 'vue'
 import { ui } from '../store'
+import { music, musicState } from '../music'
 import { Settings } from '../settings'
 import { svgPath } from '../assets'
 import { hoverSFX, AudioManager } from '../audio'
@@ -100,7 +104,7 @@ export default defineComponent({
       document.removeEventListener('mousedown', onDocClick)
       window.removeEventListener('keydown', onKey, true)
     })
-    return { open, root, toggle, ui, Settings, svg: svgPath, hoverSFX, keys: KEYS, touchKeys: TOUCH_KEYS, touch, fullscreen, toggleFullscreen }
+    return { music, musicState, open, root, toggle, ui, Settings, svg: svgPath, hoverSFX, keys: KEYS, touchKeys: TOUCH_KEYS, touch, fullscreen, toggleFullscreen }
   },
 })
 </script>
@@ -223,6 +227,15 @@ export default defineComponent({
 .sm-switch.on::after {
   transform: translateX(1.06em);
   background: goldenrod;
+}
+.sm-music-status {
+  width: 100%;
+  padding: 0.4em 0.7em;
+  color: #d9bc80;
+  border: 1px solid #6d5210;
+  background: #211b10;
+  font: inherit;
+  cursor: pointer;
 }
 .sm-keys {
   display: grid;

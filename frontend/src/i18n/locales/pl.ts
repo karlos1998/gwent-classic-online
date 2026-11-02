@@ -11,6 +11,13 @@ const pl: Messages = {
     en: 'English',
     pl: 'Polski',
   },
+  loading: {
+    preparing: 'Przygotowywanie kart, efektów i dźwięków…',
+    progress: 'Postęp ładowania zasobów',
+    note: 'Pierwsze wejście pobiera zasoby gry. Przy kolejnych wizytach przeglądarka może skorzystać z pamięci podręcznej.',
+    failed: 'Nie udało się wczytać części plików. Sprawdź połączenie i spróbuj ponownie.',
+    retry: 'Ponów ładowanie',
+  },
   home: {
     kicker: 'Wiedźmin 3: Dziki Gon',
     title: 'Gwint Classic',
@@ -118,6 +125,14 @@ const pl: Messages = {
     leaderAbility: 'Zdolność dowódcy',
   },
   settings: {
+    musicStatus: {
+      loading: 'Ładowanie muzyki…',
+      paused: 'Kliknij, aby uruchomić muzykę',
+      blocked: 'Kliknij, aby zezwolić na odtwarzanie muzyki',
+      error: 'Muzyka niedostępna — kliknij, aby ponowić',
+      playing: 'Muzyka gra',
+    },
+
     title: 'Ustawienia',
     musicLabel: 'Muzyka',
     sfxLabel: 'Efekty dźwiękowe',

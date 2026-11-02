@@ -9,6 +9,13 @@ const en = {
     en: 'English',
     pl: 'Polski',
   },
+  loading: {
+    preparing: 'Preparing cards, effects and sounds…',
+    progress: 'Asset loading progress',
+    note: 'The first visit downloads all game assets. Your browser can reuse them on future visits.',
+    failed: 'Some files could not be loaded. Check your connection and try again.',
+    retry: 'Retry loading',
+  },
   home: {
     kicker: 'The Witcher 3: Wild Hunt',
     title: 'Gwent Classic',
@@ -116,6 +123,14 @@ const en = {
     leaderAbility: 'Leader Ability',
   },
   settings: {
+    musicStatus: {
+      loading: 'Loading music…',
+      paused: 'Click to start music',
+      blocked: 'Click to allow music playback',
+      error: 'Music unavailable — click to retry',
+      playing: 'Music playing',
+    },
+
     title: 'Settings',
     musicLabel: 'Music',
     sfxLabel: 'Sound effects',

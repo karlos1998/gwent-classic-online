@@ -10,3 +10,7 @@ backend/.gradle/
 *.iml
 # local configuration (copy of .env.example)
 .env
+
+# browser regression artifacts
+frontend/test-results/
+frontend/playwright-report/
