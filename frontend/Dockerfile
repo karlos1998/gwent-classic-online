@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 # ---- build ----
-FROM node:22-alpine AS build
+FROM node:25-alpine AS build
 WORKDIR /src
 COPY package.json package-lock.json* ./
 RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
